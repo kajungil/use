@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>페라스타(Perasta) 상세페이지</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        :root {
+            --primary: #268B7C;
+            --primary-light: #e7f3f1;
+            --primary-dark: #1a6b5e;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+            --border: #e9ecef;
+            --bg: #f5f7f6;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            color: var(--text-main);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .wrapper {
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        .page-header {
+            text-align: center;
+            padding: 44px 50px 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-img {
+            height: 52px;
+            width: auto;
+            margin-bottom: 28px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 7px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 22px;
+            letter-spacing: -0.01em;
+        }
+
+        .main-copy {
+            font-size: 20px;
+            font-weight: 400;
+            color: #444;
+            word-break: keep-all;
+            margin-bottom: 18px;
+            line-height: 1.8;
+        }
+
+        .main-copy strong { color: var(--primary); font-weight: 800; }
+
+        .package-info {
+            font-size: 13px;
+            color: var(--text-sub);
+            background: var(--bg);
+            padding: 9px 18px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* ── SECTION COMMON ── */
+        .section {
+            padding: 36px 50px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child { border-bottom: none; }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* 이미지와 동일한 녹색 배지 스타일 섹션 번호 */
+        .section-num {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* ── 01 주요 특징 ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .feature-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 16px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .feature-card::before {
+            content: "•";
+            color: var(--primary);
+            font-weight: 900;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ── 02 살균 원리 ── */
+        .principle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .principle-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 20px;
+        }
+
+        .principle-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .principle-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .principle-desc {
+            font-size: 13px;
+            color: var(--text-sub);
+            line-height: 1.65;
+            word-break: keep-all;
+        }
+
+        /* ── 03 살균 스펙트럼 ── */
+        .spectrum-box {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 24px 28px;
+            font-size: 14px;
+            color: var(--text-sub);
+            line-height: 1.8;
+            word-break: keep-all;
+        }
+
+        .spectrum-box p { margin: 0 0 6px; }
+
+        .spectrum-tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .spectrum-tag {
+            background: var(--white);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        /* ── 04 분해 특성 ── */
+        .decomp-box {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 24px 28px;
+            font-size: 14px;
+            color: var(--text-sub);
+            line-height: 1.8;
+            word-break: keep-all;
+        }
+
+        .decomp-flow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            row-gap: 10px;
+        }
+
+        .decomp-break {
+            flex-basis: 100%;
+            height: 0;
+        }
+
+        .decomp-item {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .decomp-arrow {
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .decomp-result {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ── 02 주요 용도 ── */
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .usage-item {
+            background: var(--bg);
+            border-radius: 14px;
+            padding: 24px 14px;
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* ── 비교 테이블 (3컬럼) ── */
+        .sub-heading {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 28px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub-heading::before {
+            content: "";
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: center;
+            border-top: 2px solid var(--text-main);
+        }
+
+        th {
+            background: #f1f5f4;
+            padding: 13px 10px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        th.primary-col { color: var(--primary); }
+
+        td {
+            padding: 13px 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-sub);
+        }
+
+        td.row-head {
+            font-weight: 700;
+            color: var(--text-main);
+            background: #fafafa;
+        }
+
+        td.primary-val { color: var(--primary); font-weight: 600; }
+
+        /* ── 다운로드 ── */
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .btn-dl {
+            display: block;
+            text-align: center;
+            padding: 16px;
+            border: 1.5px solid var(--primary);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13.5px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-dl:hover { background: var(--primary); color: white; }
+
+        /* ── 상담 CTA ── */
+        .contact-section {
+            padding: 36px 50px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .contact-inner {
+            text-align: center;
+            padding: 40px 40px;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .contact-inner h2 {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 8px;
+            color: var(--text-main);
+        }
+
+        .contact-inner p {
+            color: var(--text-sub);
+            margin: 0 0 24px;
+            font-size: 14px;
+        }
+
+        .btn-contact {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 18px 56px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-contact:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(38,139,124,0.25);
+        }
+
+        /* ── 계산기 ── */
+        .calc-section { padding: 36px 50px; border-bottom: none; }
+
+        .calc-note {
+            font-size: 13px;
+            color: #999;
+            margin: 0 0 20px;
+        }
+
+        .calc-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calc-input-panel {
+            padding: 28px 30px;
+            border-right: 1px solid var(--border);
+            background: var(--white);
+        }
+
+        .calc-output-panel {
+            padding: 28px 30px;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .calc-panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+
+        .calc-field {
+            margin-bottom: 16px;
+        }
+
+        .calc-field label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+        }
+
+        .calc-field input,
+        .calc-field select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-main);
+            background: var(--white);
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .calc-field input:focus,
+        .calc-field select:focus {
+            border-color: var(--primary);
+        }
+
+        .calc-field small {
+            display: block;
+            font-size: 11.5px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        .calc-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.2s;
+        }
+
+        .calc-btn:hover { background: var(--primary-dark); }
+
+        .calc-result-label {
+            font-size: 12.5px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+        }
+
+        .calc-result-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .calc-result-unit {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-sub);
+            margin-left: 4px;
+        }
+
+        .calc-result-sub {
+            font-size: 12.5px;
+            color: var(--text-sub);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            line-height: 1.7;
+        }
+
+        .calc-result-sub strong {
+            color: var(--text-main);
+        }
+
+        .calc-placeholder {
+            text-align: center;
+            color: #ccc;
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        .calc-warning {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .calc-layout { grid-template-columns: 1fr; }
+            .calc-input-panel { border-right: none; border-bottom: 1px solid var(--border); }
+            .section, .calc-section { padding: 36px 20px; }
+            .page-header { padding: 44px 20px; }
+            .feature-grid { grid-template-columns: repeat(2, 1fr); }
+            .principle-grid { grid-template-columns: 1fr; }
+            .usage-grid { grid-template-columns: repeat(2, 1fr); }
+            .download-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .wrapper { margin: 0; border-radius: 0; }
+            .section, .calc-section { padding: 28px 16px; }
+            .page-header { padding: 32px 16px; }
+            .main-copy { font-size: 16px; }
+            .section-title { font-size: 17px; }
+            .feature-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .feature-card { font-size: 12.5px; padding: 14px 12px; }
+            .principle-grid { grid-template-columns: 1fr; }
+            .usage-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .usage-item { font-size: 13px; padding: 18px 10px; }
+            .download-grid { grid-template-columns: repeat(2, 1fr); }
+            .decomp-flow { gap: 6px; }
+            .decomp-item { font-size: 12px; padding: 8px 12px; }
+            .decomp-arrow { font-size: 14px; }
+            .decomp-result { font-size: 12px; padding: 8px 12px; }
+            .spectrum-tag { font-size: 12px; padding: 4px 10px; }
+            table { font-size: 12px; }
+            th, td { padding: 10px 8px; }
+            .calc-result-value { font-size: 28px; }
+            .contact-inner { padding: 20px 16px; }
+            .btn-contact { font-size: 14px; padding: 14px 28px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <img src="https://bittersweet-spectrum-462.notion.site/image/attachment%3A42f0f9e5-e14f-45e3-9317-7cf7ab58b3c7%3A%ED%8E%98%EB%9D%BC%EC%8A%A4%ED%83%80.png?table=block&id=329aec74-6abf-80fe-9cdc-da3a126a8c0a&spaceId=c352b4df-28a4-4b3f-ab00-eded78413b58&width=1410&userId=&cache=v2" alt="페라스타 로고" class="logo-img">
+        <br>
+        <span class="badge">과산화초산 10% / 식품살균제 / 기구등의 살균소독제</span>
+        <p class="main-copy">
+            <strong>페라스타</strong>는 과산화초산 농도 10%의 식품용 살균제로,<br>
+            대규모 시설 및 사업장에 최적화된 <strong>고농도 친환경 살균제입니다.</strong>
+        </p>
+        <div class="package-info">
+            <strong>포장단위</strong> &nbsp;|&nbsp; 1L · 5L · 20L · 1,000L
+        </div>
+    </div>
+
+    <!-- 01 주요 특징 -->
+    <div class="section">
+        <div class="section-head">
+            <span class="section-num">01</span>
+            <h2 class="section-title">주요 특징</h2>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">광범위한 살균 스펙트럼</div>
+            <div class="feature-card">바이오필름 제거에 효과적</div>
+            <div class="feature-card">단시간에 강력한 살균 효과 발휘</div>
+            <div class="feature-card">환경 영향(유기물, 온도)이 적음</div>
+            <div class="feature-card">소독 부산물 및 거품 발생 없음</div>
+            <div class="feature-card">사용 후 필수 제거 공정 미요구</div>
+            <div class="feature-card">할랄 인증 제품</div>
+            <div class="feature-card">KGMP 인증 시설에서 생산</div>
+            <div class="feature-card">식품접촉 기구 살균소독</div>
+        </div>
+    </div>
+
+    <!-- 02 살균 스펙트럼 -->
+    <div class="section">
+        <div class="section-head">
+            <span class="section-num">02</span>
+            <h2 class="section-title">광범위한 살균 스펙트럼</h2>
+        </div>
+        <div class="spectrum-box">
+            <p>페라스타(과산화초산)는 특정 균에 국한되지 않는 광범위 살균제입니다.</p>
+            <p>특히 일반적인 살균제로 제거하기 어려운 포자에도 신속하고 효과적인 살균력을 발휘합니다.</p>
+            <div class="spectrum-tag-row">
+                <span class="spectrum-tag">세균</span>
+                <span class="spectrum-tag">바이러스</span>
+                <span class="spectrum-tag">진균(곰팡이)</span>
+                <span class="spectrum-tag">아포균(내성 포자)</span>
+                <span class="spectrum-tag">바이오필름</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 03 분해 특성 -->
+    <div class="section">
+        <div class="section-head">
+            <span class="section-num">03</span>
+            <h2 class="section-title">분해 특성</h2>
+        </div>
+        <div class="decomp-box">
+            <p>페라스타(과산화초산)는 사용(살균 작용) 후 자연적으로 물, 산소, 초산으로 분해됩니다.</p>
+            <p>이러한 분해 특성으로 유해한 소독 부산물이 생성되지 않는 친환경 살균제로 평가됩니다.</p>
+            <div class="decomp-flow">
+                <div class="decomp-item">페라스타(과산화초산)</div>
+                <div class="decomp-arrow">→</div>
+                <div class="decomp-item">물 (H₂O)</div>
+                <div class="decomp-arrow">+</div>
+                <div class="decomp-item">산소 (O₂)</div>
+                <div class="decomp-arrow">+</div>
+                <div class="decomp-item">초산 (CH₃COOH)</div>
+                <div class="decomp-break"></div>
+                <div class="decomp-arrow">→</div>
+                <div class="decomp-result">유해 잔류물 없음</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 04 주요 용도 -->
+    <div class="section">
+        <div class="section-head">
+            <span class="section-num">04</span>
+            <h2 class="section-title">주요 용도</h2>
+        </div>
+        <div class="usage-grid">
+            <div class="usage-item">육류(포유류, 가금류)<br>살균세척</div>
+            <div class="usage-item">과일·야채<br>살균세척</div>
+            <div class="usage-item">기구 등의<br>살균세척</div>
+            <div class="usage-item">축사 및<br>음수 소독</div>
+        </div>
+    </div>
+
+    <!-- 05 사용 방법 및 희석 비율 -->
+    <div class="section">
+        <div class="section-head">
+            <span class="section-num">05</span>
+            <h2 class="section-title">사용 방법 및 희석 비율</h2>
+        </div>
+
+        <div class="sub-heading">식품용 살균제</div>
+        <div style="overflow-x:auto; margin-bottom:28px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>구분</th>
+                        <th>과일·야채</th>
+                        <th>포유류</th>
+                        <th>가금류</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="row-head">희석 비율</td>
+                        <td>1,250배 이상</td>
+                        <td>56배 이상</td>
+                        <td>50배 이상</td>
+                    </tr>
+                    <tr>
+                        <td class="row-head">과산화초산 농도</td>
+                        <td>80 ppm 이하</td>
+                        <td>1,800 ppm 이하</td>
+                        <td>2,000 ppm 이하</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sub-heading">기구 등의 살균소독제</div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>구분</th>
+                        <th>식품 조리·판매용</th>
+                        <th>유가공용</th>
+                        <th>제조·가공·소분용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="row-head">희석 비율</td>
+                        <td>1,725배 이상</td>
+                        <td>318배 이상</td>
+                        <td>318배 이상</td>
+                    </tr>
+                    <tr>
+                        <td class="row-head">과산화초산 농도</td>
+                        <td>58 ppm 이하</td>
+                        <td>315 ppm 이하</td>
+                        <td>315 ppm 이하</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 06 관련자료 다운로드 -->
+    <div class="section">
+        <div class="section-head">
+            <span class="section-num">06</span>
+            <h2 class="section-title">관련자료 다운로드</h2>
+        </div>
+        <div class="download-grid">
+            <a href="#" class="btn-dl">품목제조보고서</a>
+            <a href="#" class="btn-dl">자가품질성적서</a>
+            <a href="#" class="btn-dl">MSDS</a>
+            <a href="#" class="btn-dl">효력시험 결과</a>
+            <a href="#" class="btn-dl">할랄인증서</a>
+            <a href="#" class="btn-dl">KGMP 인증서</a>
+        </div>
+    </div>
+
+    <!-- 07 전문 상담 및 견적 문의 -->
+    <div class="contact-section">
+        <div class="section-head">
+            <span class="section-num">07</span>
+            <h2 class="section-title">전문 상담 및 견적 문의</h2>
+        </div>
+        <div class="contact-inner">
+            <p>대량 구매 및 도입 관련 상세 견적을 안내해 드립니다.</p>
+            <a href="http://perastar.webmind.kr/common/contact/write.php" target="_blank" class="btn-contact">실시간 견적 문의하기</a>
+        </div>
+    </div>
+
+    <!-- 08 희석 계산기 -->
+    <div class="calc-section">
+        <div class="section-head">
+            <span class="section-num">08</span>
+            <h2 class="section-title">희석 계산기</h2>
+        </div>
+        <iframe src="https://kajungil.github.io/perastar/" title="페라스타 희석계산기" scrolling="no"
+                style="width:100%; height:500px; border:none; border-radius:12px; background:var(--bg);"></iframe>
+    </div>
+
+</div>
+</body>
+</html>
