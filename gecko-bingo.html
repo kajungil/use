@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦎 게코 빙고</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+  :root {
+    --jungle: #1a2e1a;
+    --leaf: #2d5a27;
+    --lime: #7ec850;
+    --gold: #f5c842;
+    --amber: #e8963a;
+    --coral: #e85c5c;
+    --sky: #5cc8e8;
+    --cream: #fdf6e3;
+    --card-bg: rgba(255,255,255,0.07);
+    --border: rgba(126,200,80,0.3);
+    --glow: 0 0 20px rgba(126,200,80,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--jungle);
+    color: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(45,90,39,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(126,200,80,0.1) 0%, transparent 50%),
+      repeating-linear-gradient(
+        60deg,
+        transparent,
+        transparent 40px,
+        rgba(45,90,39,0.08) 40px,
+        rgba(45,90,39,0.08) 41px
+      );
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; padding: 20px; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  /* ── LOBBY ── */
+  .lobby-card {
+    background: rgba(20,40,20,0.85);
+    border: 2px solid var(--lime);
+    border-radius: 24px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--glow), 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .gecko-svg { display: block; margin: 0 auto 16px; }
+
+  h1.title {
+    font-family: 'Jua', sans-serif;
+    font-size: 2.4rem;
+    text-align: center;
+    color: var(--lime);
+    text-shadow: 0 0 30px rgba(126,200,80,0.6);
+    margin-bottom: 4px;
+  }
+  .subtitle { text-align: center; color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-bottom: 28px; }
+
+  label { font-size: 0.8rem; color: var(--lime); font-weight: 700; letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--cream);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 16px;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--lime);
+    box-shadow: 0 0 0 3px rgba(126,200,80,0.15);
+  }
+  select option { background: #1a2e1a; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-primary { background: linear-gradient(135deg, var(--lime), #5aad30); color: #0f1f0f; box-shadow: 0 4px 20px rgba(126,200,80,0.35); margin-bottom: 12px; }
+  .btn-secondary { background: linear-gradient(135deg, var(--amber), #c97820); color: #fff; box-shadow: 0 4px 20px rgba(232,150,58,0.3); margin-bottom: 12px; }
+  .btn-danger { background: linear-gradient(135deg, var(--coral), #c03030); color: #fff; }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--cream); }
+  .btn-sky { background: linear-gradient(135deg, var(--sky), #3aabe8); color: #0f2030; box-shadow: 0 4px 20px rgba(92,200,232,0.3); margin-bottom: 12px; }
+  .btn-gold { background: linear-gradient(135deg, var(--gold), #c8a020); color: #1a1000; box-shadow: 0 4px 20px rgba(245,200,66,0.3); margin-bottom: 12px; }
+
+  .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: rgba(255,255,255,0.3); font-size: 0.8rem; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+
+  .error-msg { color: var(--coral); font-size: 0.85rem; text-align: center; margin-top: -8px; margin-bottom: 12px; min-height: 20px; }
+
+  .room-code-display {
+    font-family: 'Jua', sans-serif;
+    font-size: 3rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-align: center;
+    text-shadow: 0 0 20px rgba(245,200,66,0.5);
+    padding: 12px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    border: 1px dashed var(--gold);
+    margin: 12px 0;
+  }
+
+  /* ── SETUP ── */
+  .setup-card {
+    background: rgba(20,40,20,0.9);
+    border: 2px solid var(--amber);
+    border-radius: 24px;
+    padding: 28px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 0 30px rgba(232,150,58,0.3), 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .setup-card h2 { font-family: 'Jua', sans-serif; font-size: 1.5rem; color: var(--amber); margin-bottom: 20px; text-align: center; }
+
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .mode-btn {
+    padding: 16px 12px;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.3);
+    color: var(--cream);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: 'Jua', sans-serif;
+    font-size: 1rem;
+  }
+  .mode-btn .mode-icon { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+  .mode-btn.selected { border-color: var(--lime); background: rgba(126,200,80,0.15); box-shadow: 0 0 15px rgba(126,200,80,0.2); }
+  .mode-btn:hover { border-color: var(--lime); }
+
+  .words-input-area { margin-bottom: 16px; }
+  .words-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; margin-bottom: 8px; min-height: 40px; }
+  .word-tag {
+    background: rgba(126,200,80,0.2);
+    border: 1px solid var(--lime);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .word-tag button { background: none; border: none; color: var(--coral); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+  .word-count { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .toggle-label { font-size: 0.9rem; }
+  .toggle {
+    width: 44px; height: 24px;
+    background: rgba(0,0,0,0.4);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--lime); border-color: var(--lime); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 22px; }
+
+  /* ── GAME ROOM ── */
+  #gameScreen { padding: 0; }
+  .game-layout { display: flex; flex-direction: column; width: 100%; min-height: 100vh; max-width: 600px; margin: 0 auto; }
+
+  .game-header {
+    background: rgba(15,25,15,0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+  .header-room-code { font-family: 'Jua', sans-serif; font-size: 1.1rem; color: var(--gold); }
+  .header-status {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .status-waiting { background: rgba(232,150,58,0.2); color: var(--amber); border: 1px solid var(--amber); }
+  .status-playing { background: rgba(126,200,80,0.2); color: var(--lime); border: 1px solid var(--lime); animation: statusPulse 2s infinite; }
+  .status-finished { background: rgba(232,92,92,0.2); color: var(--coral); border: 1px solid var(--coral); }
+
+  @keyframes statusPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  .players-bar {
+    padding: 8px 12px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+  }
+  .players-bar::-webkit-scrollbar { display: none; }
+  .player-chip {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .player-chip.me { background: rgba(126,200,80,0.2); border-color: var(--lime); color: var(--lime); }
+  .player-chip.current-turn { background: rgba(245,200,66,0.2); border-color: var(--gold); color: var(--gold); animation: turnPulse 1s infinite; }
+  @keyframes turnPulse { 0%,100% { box-shadow: 0 0 0 rgba(245,200,66,0.4); } 50% { box-shadow: 0 0 12px rgba(245,200,66,0.4); } }
+
+  .game-body { flex: 1; padding: 16px; overflow-y: auto; }
+
+  /* Called number display */
+  .called-display {
+    background: rgba(0,0,0,0.4);
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(245,200,66,0.2);
+  }
+  .called-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; margin-bottom: 4px; }
+  .called-value {
+    font-family: 'Jua', sans-serif;
+    font-size: 2.8rem;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(245,200,66,0.6);
+    line-height: 1;
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  .called-progress { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+  .called-history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+    justify-content: center;
+    max-height: 60px;
+    overflow-y: auto;
+  }
+  .history-chip {
+    padding: 2px 8px;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 6px;
+    font-size: 0.72rem;
+    color: var(--gold);
+  }
+
+  /* Turn indicator */
+  .turn-banner {
+    background: linear-gradient(135deg, rgba(126,200,80,0.15), rgba(126,200,80,0.05));
+    border: 1px solid var(--lime);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+  .turn-banner strong { color: var(--lime); font-family: 'Jua', sans-serif; }
+
+  /* Input section for turn */
+  .turn-input-box {
+    background: rgba(0,0,0,0.35);
+    border: 2px solid var(--lime);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 0 20px rgba(126,200,80,0.15);
+  }
+  .turn-input-box h3 { font-family: 'Jua', sans-serif; color: var(--lime); font-size: 1rem; margin-bottom: 10px; }
+  .input-row { display: flex; gap: 8px; }
+  .input-row input { flex: 1; margin-bottom: 0; }
+  .btn-send {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--lime), #5aad30);
+    color: #0f1f0f;
+    font-family: 'Jua', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+    white-space: nowrap;
+  }
+  .btn-send:hover { transform: translateY(-2px); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .random-hint { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 6px; text-align: right; }
+
+  /* Bingo Board */
+  .bingo-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+  .bingo-cell {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: rgba(0,0,0,0.35);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Jua', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2px;
+    word-break: break-all;
+    line-height: 1.2;
+    position: relative;
+    overflow: hidden;
+  }
+  .bingo-cell.called:not(.marked) {
+    border-color: var(--amber);
+    background: rgba(232,150,58,0.15);
+    color: var(--amber);
+    animation: cellGlow 1.5s ease-in-out infinite;
+    cursor: pointer;
+  }
+  @keyframes cellGlow { 0%,100% { box-shadow: none; } 50% { box-shadow: 0 0 12px rgba(232,150,58,0.4); } }
+
+  .bingo-cell.marked {
+    background: linear-gradient(135deg, var(--lime), #5aad30);
+    border-color: var(--lime);
+    color: #0f1f0f;
+    font-weight: 900;
+    cursor: default;
+    animation: markIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 4px 12px rgba(126,200,80,0.4);
+  }
+  @keyframes markIn { from { transform: scale(0.7); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
+
+  .bingo-cell:not(.called):not(.marked) { cursor: default; }
+
+  /* Bingo lines */
+  .bingo-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .bingo-count { font-family: 'Jua', sans-serif; font-size: 1rem; }
+  .bingo-dots { display: flex; gap: 6px; }
+  .bingo-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    transition: all 0.3s;
+  }
+  .bingo-dot.filled { background: var(--lime); border-color: var(--lime); box-shadow: 0 0 8px rgba(126,200,80,0.5); }
+
+  /* Scoreboard */
+  .scoreboard { margin-bottom: 14px; }
+  .scoreboard h3 { font-family: 'Jua', sans-serif; font-size: 0.9rem; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+  .score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .score-row.me { border-color: var(--lime); background: rgba(126,200,80,0.08); }
+  .score-name { font-weight: 700; font-size: 0.9rem; }
+  .score-bingos { font-family: 'Jua', sans-serif; color: var(--gold); font-size: 0.9rem; }
+
+  /* Waiting room */
+  .waiting-center { text-align: center; padding: 20px 0; }
+  .waiting-center h2 { font-family: 'Jua', sans-serif; font-size: 1.3rem; color: var(--lime); margin-bottom: 8px; }
+  .waiting-center p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 20px; }
+  .bouncing { animation: bounce 1.5s infinite; display: inline-block; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  /* ── VICTORY OVERLAY ── */
+  .overlay {
+    position: fixed; inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .victory-card {
+    background: linear-gradient(145deg, #0f2010, #1a3a1a);
+    border: 3px solid var(--gold);
+    border-radius: 28px;
+    padding: 40px 32px;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(245,200,66,0.4), 0 30px 80px rgba(0,0,0,0.6);
+    animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes cardIn { from { transform: scale(0.7) translateY(30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+  .defeat-card {
+    border-color: var(--coral);
+    box-shadow: 0 0 60px rgba(232,92,92,0.4), 0 30px 80px rgba(0,0,0,0.6);
+  }
+
+  .victory-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  .victory-subtitle { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 24px; }
+
+  /* Confetti */
+  .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99; overflow: hidden; }
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── TOAST ── */
+  .toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .toast {
+    background: rgba(20,40,20,0.95);
+    border: 1.5px solid var(--lime);
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    color: var(--cream);
+    white-space: nowrap;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+    box-shadow: var(--glow);
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 380px) {
+    .bingo-cell { font-size: 0.78rem; }
+    .called-value { font-size: 2.2rem; }
+  }
+
+  /* share info */
+  .share-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 16px;
+  }
+  .share-box strong { color: var(--sky); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; margin-left: 6px; }
+  .badge-host { background: rgba(245,200,66,0.2); color: var(--gold); border: 1px solid var(--gold); }
+  .badge-next { background: rgba(92,200,232,0.2); color: var(--sky); border: 1px solid var(--sky); }
+
+  .next-turn-info { font-size: 0.8rem; color: var(--sky); text-align: center; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="lobbyScreen" class="screen active">
+  <div class="lobby-card">
+    <!-- Gecko SVG: 4 legs, real gecko -->
+    <svg class="gecko-svg" width="100" height="90" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="50" cy="50" rx="18" ry="24" fill="#5aad30"/>
+      <!-- Head -->
+      <ellipse cx="50" cy="26" rx="13" ry="11" fill="#6cc235"/>
+      <!-- Snout -->
+      <ellipse cx="50" cy="20" rx="7" ry="5" fill="#6cc235"/>
+      <!-- Eyes -->
+      <circle cx="43" cy="24" r="4" fill="#1a1a1a"/>
+      <circle cx="57" cy="24" r="4" fill="#1a1a1a"/>
+      <circle cx="44" cy="23" r="1.5" fill="#f5c842"/>
+      <circle cx="58" cy="23" r="1.5" fill="#f5c842"/>
+      <!-- Pupils -->
+      <ellipse cx="43" cy="24" rx="1.5" ry="2.2" fill="#000"/>
+      <ellipse cx="57" cy="24" rx="1.5" ry="2.2" fill="#000"/>
+      <!-- Nostril -->
+      <circle cx="47" cy="20" r="1" fill="#3a8a20"/>
+      <circle cx="53" cy="20" r="1" fill="#3a8a20"/>
+      <!-- Mouth smile -->
+      <path d="M44 30 Q50 35 56 30" stroke="#3a8a20" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Tongue -->
+      <path d="M48 32 Q50 37 52 32" stroke="#e85c5c" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Front left leg -->
+      <path d="M34 48 Q26 44 22 52" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M22 52 Q18 55 16 58" stroke="#4a9a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Front right leg -->
+      <path d="M66 48 Q74 44 78 52" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M78 52 Q82 55 84 58" stroke="#4a9a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Back left leg -->
+      <path d="M36 65 Q26 68 22 76" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M22 76 Q18 80 16 84" stroke="#4a9a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Back right leg -->
+      <path d="M64 65 Q74 68 78 76" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M78 76 Q82 80 84 84" stroke="#4a9a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Tail -->
+      <path d="M50 74 Q45 82 42 90" stroke="#5aad30" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M42 90 Q40 94 38 96" stroke="#4a9a28" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- Back pattern dots -->
+      <circle cx="50" cy="44" r="2.5" fill="#7acd50" opacity="0.7"/>
+      <circle cx="44" cy="52" r="2" fill="#7acd50" opacity="0.5"/>
+      <circle cx="56" cy="52" r="2" fill="#7acd50" opacity="0.5"/>
+      <circle cx="50" cy="60" r="2.5" fill="#7acd50" opacity="0.6"/>
+    </svg>
+
+    <h1 class="title">🦎 게코 빙고</h1>
+    <p class="subtitle">친구와 함께하는 실시간 빙고 게임</p>
+
+    <div class="share-box">
+      💡 <strong>멀티플레이 방법:</strong> 방 코드를 카카오톡, 원드라이브 공유 링크, 문자 등으로 친구에게 보내면 같이 즐길 수 있어요!
+    </div>
+
+    <label>닉네임</label>
+    <input type="text" id="nameInput" placeholder="닉네임 입력 (최대 8자)" maxlength="8"/>
+
+    <button class="btn btn-primary" onclick="createRoom()">🏠 방 만들기</button>
+
+    <div class="divider">또는</div>
+
+    <label>방 코드 (4자리)</label>
+    <div class="input-row">
+      <input type="text" id="codeInput" placeholder="1234" maxlength="4" style="text-align:center;letter-spacing:0.2em;font-size:1.3rem;"/>
+      <button class="btn btn-sky" onclick="joinRoom()" style="margin-bottom:0;width:auto;padding:12px 20px;">참가</button>
+    </div>
+
+    <p class="error-msg" id="lobbyError"></p>
+  </div>
+</div>
+
+<!-- SETUP (host only) -->
+<div id="setupScreen" class="screen">
+  <div class="setup-card">
+    <h2>⚙️ 게임 설정</h2>
+
+    <label>빙고 모드 선택</label>
+    <div class="mode-grid">
+      <div class="mode-btn selected" onclick="selectMode('number-random')" id="mode-number-random">
+        <span class="mode-icon">🎲</span>
+        숫자 (랜덤)
+      </div>
+      <div class="mode-btn" onclick="selectMode('number-custom')" id="mode-number-custom">
+        <span class="mode-icon">✏️</span>
+        숫자 (직접입력)
+      </div>
+      <div class="mode-btn" onclick="selectMode('word')" id="mode-word">
+        <span class="mode-icon">📝</span>
+        단어 빙고
+      </div>
+      <div class="mode-btn" onclick="selectMode('emoji')" id="mode-emoji">
+        <span class="mode-icon">😄</span>
+        이모지 빙고
+      </div>
+    </div>
+
+    <!-- 단어/이모지 입력 -->
+    <div id="wordInputSection" style="display:none">
+      <label>빙고판 내용 입력 <span style="color:rgba(255,255,255,0.4);font-weight:normal;">(25개 필요)</span></label>
+      <div class="input-row">
+        <input type="text" id="wordInputField" placeholder="단어 입력 후 Enter" style="margin-bottom:0" maxlength="6"/>
+        <button class="btn-send" onclick="addWord()">추가</button>
+      </div>
+      <div class="words-grid" id="wordTagsContainer"></div>
+      <p class="word-count" id="wordCount">0 / 25개</p>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">🔄 번갈아가며 호출 (켜짐 = 턴제)</span>
+      <div class="toggle on" id="turnToggle" onclick="toggleTurnMode()"></div>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">⏱️ 제한 시간 (30초)</span>
+      <div class="toggle" id="timerToggle" onclick="toggleTimer()"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="startSetup()" id="startSetupBtn">🎮 게임 시작!</button>
+    <button class="btn btn-ghost" onclick="cancelSetup()">← 취소</button>
+    <p class="error-msg" id="setupError"></p>
+  </div>
+</div>
+
+<!-- WAITING ROOM -->
+<div id="waitingScreen" class="screen">
+  <div class="lobby-card" style="max-width:460px;">
+    <div class="waiting-center">
+      <div class="bouncing" style="font-size:3rem;">🦎</div>
+      <h2 style="font-family:'Jua',sans-serif;color:var(--lime);margin:12px 0 8px;">대기실</h2>
+      <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:12px;">친구에게 방 코드를 공유하세요</p>
+      <div class="room-code-display" id="waitingRoomCode">----</div>
+      <p style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-bottom:16px;">방 코드를 카카오톡·문자로 공유하세요 📲</p>
+    </div>
+
+    <label>참가자 (<span id="playerCountWait">0</span>명)</label>
+    <div id="waitingPlayersList" style="margin-bottom:20px;"></div>
+
+    <div id="hostSetupButtons" style="display:none;">
+      <button class="btn btn-secondary" onclick="showSetupScreen()">⚙️ 게임 설정하기</button>
+      <button class="btn btn-primary" onclick="hostStartGame()" id="hostStartBtn" disabled>🎮 게임 시작!</button>
+    </div>
+    <div id="guestWaitMsg" style="text-align:center;color:rgba(255,255,255,0.4);font-size:0.9rem;display:none;">
+      호스트가 게임을 시작할 때까지 대기 중...
+    </div>
+
+    <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:12px;">← 나가기</button>
+    <p class="error-msg" id="waitingError"></p>
+  </div>
+</div>
+
+<!-- GAME ROOM -->
+<div id="gameScreen" class="screen">
+  <div class="game-layout">
+    <div class="game-header">
+      <button onclick="confirmLeave()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:0.85rem;">← 나가기</button>
+      <span class="header-room-code" id="gameRoomCode">----</span>
+      <span class="header-status status-playing" id="gameStatusBadge">진행중</span>
+    </div>
+
+    <div class="players-bar" id="gamePlayerBar"></div>
+
+    <div class="game-body">
+      <!-- Called number -->
+      <div class="called-display" id="calledDisplay" style="display:none;">
+        <div class="called-label">📢 호출된 항목</div>
+        <div class="called-value" id="calledValue">-</div>
+        <div class="called-progress" id="calledProgress">0 / 0 호출됨</div>
+        <div class="called-history" id="calledHistory"></div>
+      </div>
+
+      <!-- Turn banner -->
+      <div class="turn-banner" id="turnBanner" style="display:none;"></div>
+
+      <!-- Turn input (for current player) -->
+      <div class="turn-input-box" id="turnInputBox" style="display:none;">
+        <h3 id="turnInputTitle">🎯 당신의 차례!</h3>
+        <div class="input-row">
+          <input type="text" id="callInput" placeholder="입력하세요" style="margin-bottom:0;" maxlength="10"/>
+          <button class="btn-send" onclick="submitCall()" id="callBtn">📢 호출</button>
+        </div>
+        <p class="random-hint" id="randomHint"></p>
+      </div>
+
+      <!-- Timer -->
+      <div id="timerBar" style="display:none;margin-bottom:12px;">
+        <div style="background:rgba(0,0,0,0.3);border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+          <div id="timerFill" style="height:6px;background:var(--lime);transition:width 1s linear;width:100%;"></div>
+        </div>
+        <div style="text-align:center;font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;" id="timerText">30초</div>
+      </div>
+
+      <!-- My board -->
+      <div class="bingo-status">
+        <span class="bingo-count">🦎 내 빙고: <strong id="myBingoCount">0</strong> / 5</span>
+        <div class="bingo-dots" id="bingoDots">
+          <div class="bingo-dot"></div>
+          <div class="bingo-dot"></div>
+          <div class="bingo-dot"></div>
+          <div class="bingo-dot"></div>
+          <div class="bingo-dot"></div>
+        </div>
+      </div>
+
+      <div class="bingo-board" id="bingoBoard"></div>
+
+      <!-- Scoreboard -->
+      <div class="scoreboard">
+        <h3>📊 빙고 현황</h3>
+        <div id="scoreList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VICTORY OVERLAY -->
+<div id="victoryOverlay" style="display:none;">
+  <div class="confetti-container" id="confettiContainer"></div>
+  <div class="overlay">
+    <div class="victory-card" id="victoryCard">
+      <div style="font-size:3rem;margin-bottom:8px;" id="victoryEmoji">🎉</div>
+      <div class="victory-title" id="victoryTitle" style="color:var(--gold);">승리!</div>
+      <div class="victory-subtitle" id="victorySubtitle"></div>
+      <svg width="120" height="100" viewBox="0 0 100 90" style="margin:16px auto;display:block;">
+        <!-- Victory gecko with raised front legs -->
+        <ellipse cx="50" cy="52" rx="18" ry="24" fill="#5aad30"/>
+        <ellipse cx="50" cy="28" rx="13" ry="11" fill="#6cc235"/>
+        <ellipse cx="50" cy="22" rx="7" ry="5" fill="#6cc235"/>
+        <circle cx="43" cy="26" r="4" fill="#1a1a1a"/>
+        <circle cx="57" cy="26" r="4" fill="#1a1a1a"/>
+        <circle cx="44" cy="25" r="1.5" fill="#f5c842"/>
+        <circle cx="58" cy="25" r="1.5" fill="#f5c842"/>
+        <!-- Raised front arms (victory pose) -->
+        <path d="M34 48 Q20 30 16 20" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M16 20 Q13 15 10 12" stroke="#4a9a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M66 48 Q80 30 84 20" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M84 20 Q87 15 90 12" stroke="#4a9a28" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Back legs -->
+        <path d="M36 68 Q26 72 22 80" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M64 68 Q74 72 78 80" stroke="#5aad30" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- Tail -->
+        <path d="M50 76 Q45 85 42 92" stroke="#5aad30" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- Big smile -->
+        <path d="M42 34 Q50 42 58 34" stroke="#3a8a20" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Stars -->
+        <text x="5" y="20" font-size="14">⭐</text>
+        <text x="75" y="20" font-size="14">⭐</text>
+      </svg>
+      <button class="btn btn-primary" onclick="closeVictory()" style="width:auto;padding:12px 32px;display:inline-block;">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const STATE = {
+  myId: null,
+  myName: '',
+  roomCode: null,
+  isHost: false,
+  players: {},      // id -> {name, board, marked, bingos, isHost}
+  room: {
+    status: 'waiting',
+    mode: 'number-random',   // number-random | number-custom | word | emoji
+    turnOrder: [],   // [playerId, ...]
+    currentTurnIdx: 0,
+    calledItems: [],
+    currentItem: null,
+    timerEnabled: false,
+    customWords: [],
+    winnerId: null,
+  },
+  gameSettings: {
+    mode: 'number-random',
+    turnMode: true,
+    timerEnabled: false,
+    customWords: [],
+  },
+  pendingWords: [],
+  timerInterval: null,
+  timerLeft: 30,
+  pollInterval: null,
+  channel: null,
+};
+
+// ═══════════════════════════════════════
+//  SHARED STORAGE (localStorage based multiplayer sim)
+//  In production → replace with Supabase/Firebase
+// ═══════════════════════════════════════
+
+function getStore(key) {
+  try { return JSON.parse(localStorage.getItem('gecko_' + key)); } catch { return null; }
+}
+function setStore(key, val) {
+  localStorage.setItem('gecko_' + key, JSON.stringify(val));
+}
+function delStore(key) { localStorage.removeItem('gecko_' + key); }
+
+function getRoomData(code) { return getStore('room_' + code); }
+function setRoomData(code, data) { setStore('room_' + code, { ...data, _ts: Date.now() }); }
+
+// ═══════════════════════════════════════
+//  BINGO LOGIC
+// ═══════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateBoard(mode, words) {
+  if (mode === 'number-random' || mode === 'number-custom') {
+    return shuffle(Array.from({length:25}, (_,i)=>String(i+1)));
+  }
+  return shuffle([...words]);
+}
+
+function countBingos(marked) {
+  let count = 0;
+  for (let r = 0; r < 5; r++) {
+    if ([0,1,2,3,4].every(c => marked[r*5+c])) count++;
+  }
+  for (let c = 0; c < 5; c++) {
+    if ([0,1,2,3,4].every(r => marked[r*5+c])) count++;
+  }
+  if ([0,6,12,18,24].every(i => marked[i])) count++;
+  if ([4,8,12,16,20].every(i => marked[i])) count++;
+  return count;
+}
+
+function checkWin(marked) { return countBingos(marked) >= 5; }
+
+// ═══════════════════════════════════════
+//  SCREENS
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+//  LOBBY
+// ═══════════════════════════════════════
+function createRoom() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) { showError('lobbyError', '닉네임을 입력하세요'); return; }
+
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  const myId = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
+  STATE.myId = myId;
+  STATE.myName = name;
+  STATE.roomCode = code;
+  STATE.isHost = true;
+
+  const roomData = {
+    code,
+    status: 'waiting',
+    mode: 'number-random',
+    turnMode: true,
+    timerEnabled: false,
+    customWords: [],
+    turnOrder: [myId],
+    currentTurnIdx: 0,
+    calledItems: [],
+    currentItem: null,
+    winnerId: null,
+    players: {
+      [myId]: {
+        name,
+        isHost: true,
+        board: generateBoard('number-random', []),
+        marked: Array(25).fill(false),
+        bingos: 0,
+        online: true,
+        lastSeen: Date.now(),
+      }
+    }
+  };
+  setRoomData(code, roomData);
+  localStorage.setItem('gecko_myId', myId);
+  localStorage.setItem('gecko_myRoom', code);
+
+  syncFromStore();
+  showWaiting();
+  startPoll();
+}
+
+function joinRoom() {
+  const name = document.getElementById('nameInput').value.trim();
+  const code = document.getElementById('codeInput').value.trim();
+  if (!name) { showError('lobbyError', '닉네임을 입력하세요'); return; }
+  if (code.length !== 4) { showError('lobbyError', '4자리 방 코드를 입력하세요'); return; }
+
+  const roomData = getRoomData(code);
+  if (!roomData) { showError('lobbyError', '방을 찾을 수 없습니다'); return; }
+  if (roomData.status !== 'waiting') { showError('lobbyError', '이미 진행 중인 게임입니다'); return; }
+
+  const myId = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  STATE.myId = myId;
+  STATE.myName = name;
+  STATE.roomCode = code;
+  STATE.isHost = false;
+
+  roomData.players[myId] = {
+    name,
+    isHost: false,
+    board: generateBoard(roomData.mode, roomData.customWords),
+    marked: Array(25).fill(false),
+    bingos: 0,
+    online: true,
+    lastSeen: Date.now(),
+  };
+  roomData.turnOrder.push(myId);
+  setRoomData(code, roomData);
+  localStorage.setItem('gecko_myId', myId);
+  localStorage.setItem('gecko_myRoom', code);
+
+  syncFromStore();
+  showWaiting();
+  startPoll();
+}
+
+// ═══════════════════════════════════════
+//  WAITING
+// ═══════════════════════════════════════
+function showWaiting() {
+  showScreen('waitingScreen');
+  document.getElementById('waitingRoomCode').textContent = STATE.roomCode;
+  document.getElementById('hostSetupButtons').style.display = STATE.isHost ? 'block' : 'none';
+  document.getElementById('guestWaitMsg').style.display = STATE.isHost ? 'none' : 'block';
+  renderWaitingPlayers();
+}
+
+function renderWaitingPlayers() {
+  const roomData = getRoomData(STATE.roomCode);
+  if (!roomData) return;
+  const players = roomData.players;
+  const list = document.getElementById('waitingPlayersList');
+  document.getElementById('playerCountWait').textContent = Object.keys(players).length;
+
+  list.innerHTML = Object.entries(players).map(([id, p]) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:6px;border:1px solid ${id===STATE.myId?'var(--lime)':'var(--border)'}">
+      <span style="font-size:1.2rem;">${p.isHost ? '👑' : '🦎'}</span>
+      <span style="font-weight:700;${id===STATE.myId?'color:var(--lime)':''}">${p.name}${id===STATE.myId?' (나)':''}</span>
+      ${p.isHost ? '<span class="badge badge-host">방장</span>' : ''}
+    </div>
+  `).join('');
+
+  const count = Object.keys(players).length;
+  const startBtn = document.getElementById('hostStartBtn');
+  if (startBtn) startBtn.disabled = count < 2;
+}
+
+// ═══════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════
+let gameMode = 'number-random';
+let turnModeOn = true;
+let timerOn = false;
+
+function showSetupScreen() { showScreen('setupScreen'); }
+function cancelSetup() { showScreen('waitingScreen'); }
+
+function selectMode(mode) {
+  gameMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('mode-' + mode).classList.add('selected');
+
+  const wordSection = document.getElementById('wordInputSection');
+  wordSection.style.display = (mode === 'word' || mode === 'emoji') ? 'block' : 'none';
+
+  if (mode === 'word') {
+    document.getElementById('wordInputField').placeholder = '단어 입력 후 Enter (예: 사과)';
+  } else if (mode === 'emoji') {
+    document.getElementById('wordInputField').placeholder = '이모지 입력 (예: 🍎)';
+  }
+}
+
+function toggleTurnMode() {
+  turnModeOn = !turnModeOn;
+  document.getElementById('turnToggle').classList.toggle('on', turnModeOn);
+}
+
+function toggleTimer() {
+  timerOn = !timerOn;
+  document.getElementById('timerToggle').classList.toggle('on', timerOn);
+}
+
+function addWord() {
+  const input = document.getElementById('wordInputField');
+  const word = input.value.trim();
+  if (!word) return;
+  if (STATE.pendingWords.length >= 25) { showError('setupError','25개가 최대입니다'); return; }
+  if (STATE.pendingWords.includes(word)) { showError('setupError','이미 추가된 항목입니다'); return; }
+  STATE.pendingWords.push(word);
+  input.value = '';
+  renderWordTags();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'wordInputField') addWord();
+});
+
+function removeWord(idx) {
+  STATE.pendingWords.splice(idx, 1);
+  renderWordTags();
+}
+
+function renderWordTags() {
+  const container = document.getElementById('wordTagsContainer');
+  container.innerHTML = STATE.pendingWords.map((w, i) =>
+    `<div class="word-tag">${w}<button onclick="removeWord(${i})">×</button></div>`
+  ).join('');
+  document.getElementById('wordCount').textContent = `${STATE.pendingWords.length} / 25개`;
+}
+
+function startSetup() {
+  if ((gameMode === 'word' || gameMode === 'emoji') && STATE.pendingWords.length < 25) {
+    showError('setupError', `단어 25개를 입력해야 합니다 (현재 ${STATE.pendingWords.length}개)`);
+    return;
+  }
+
+  const roomData = getRoomData(STATE.roomCode);
+  if (!roomData) return;
+
+  // Regenerate boards for all players with new settings
+  const words = [...STATE.pendingWords];
+  Object.keys(roomData.players).forEach(id => {
+    roomData.players[id].board = generateBoard(gameMode, words);
+    roomData.players[id].marked = Array(25).fill(false);
+    roomData.players[id].bingos = 0;
+  });
+
+  roomData.mode = gameMode;
+  roomData.turnMode = turnModeOn;
+  roomData.timerEnabled = timerOn;
+  roomData.customWords = words;
+  setRoomData(STATE.roomCode, roomData);
+
+  showScreen('waitingScreen');
+  showToast('⚙️ 게임 설정이 저장되었습니다!');
+}
+
+function hostStartGame() {
+  const roomData = getRoomData(STATE.roomCode);
+  if (!roomData) return;
+  const count = Object.keys(roomData.players).length;
+  if (count < 2) { showError('waitingError', '최소 2명이 필요합니다'); return; }
+
+  roomData.status = 'playing';
+  roomData.calledItems = [];
+  roomData.currentItem = null;
+  roomData.currentTurnIdx = 0;
+  // shuffle turn order
+  roomData.turnOrder = shuffle(roomData.turnOrder);
+  setRoomData(STATE.roomCode, roomData);
+}
+
+// ═══════════════════════════════════════
+//  GAME
+// ═══════════════════════════════════════
+function showGameScreen(roomData) {
+  showScreen('gameScreen');
+  document.getElementById('gameRoomCode').textContent = 'Room ' + roomData.code;
+  renderGame(roomData);
+}
+
+function renderGame(roomData) {
+  const me = roomData.players[STATE.myId];
+  if (!me) return;
+
+  // Players bar
+  const bar = document.getElementById('gamePlayerBar');
+  const currentTurnId = roomData.turnOrder[roomData.currentTurnIdx % roomData.turnOrder.length];
+  bar.innerHTML = Object.entries(roomData.players).map(([id, p]) => {
+    let cls = 'player-chip';
+    if (id === STATE.myId) cls += ' me';
+    if (id === currentTurnId && roomData.turnMode && roomData.status === 'playing') cls += ' current-turn';
+    return `<div class="${cls}">${p.isHost ? '👑 ' : '🦎 '}${p.name}${id===STATE.myId?' (나)':''}${roomData.turnMode && id===currentTurnId?' 🎯':''}</div>`;
+  }).join('');
+
+  // Called display
+  const calledDisplay = document.getElementById('calledDisplay');
+  if (roomData.calledItems.length > 0) {
+    calledDisplay.style.display = '';
+    document.getElementById('calledValue').textContent = roomData.currentItem || '-';
+    document.getElementById('calledProgress').textContent = `${roomData.calledItems.length} / ${roomData.mode.startsWith('number') ? 25 : (roomData.customWords?.length || 25)} 호출됨`;
+    const hist = document.getElementById('calledHistory');
+    hist.innerHTML = [...roomData.calledItems].reverse().slice(0,20).map(i =>
+      `<span class="history-chip">${i}</span>`
+    ).join('');
+  }
+
+  // Turn info
+  const isMyTurn = currentTurnId === STATE.myId;
+  const turnBanner = document.getElementById('turnBanner');
+  const turnInputBox = document.getElementById('turnInputBox');
+
+  if (roomData.turnMode && roomData.status === 'playing') {
+    turnBanner.style.display = '';
+    const currentPlayer = roomData.players[currentTurnId];
+    if (isMyTurn) {
+      turnBanner.innerHTML = `🎯 <strong>당신의 차례입니다!</strong> 항목을 호출하세요`;
+    } else {
+      turnBanner.innerHTML = `⏳ <strong>${currentPlayer?.name}</strong>님의 차례...`;
+    }
+
+    if (isMyTurn) {
+      turnInputBox.style.display = '';
+      const mode = roomData.mode;
+      const callInput = document.getElementById('callInput');
+      const randomHint = document.getElementById('randomHint');
+
+      if (mode === 'number-random') {
+        document.getElementById('turnInputTitle').textContent = '🎲 랜덤 숫자 호출 또는 직접 입력';
+        callInput.placeholder = '비워두면 자동 랜덤';
+        randomHint.textContent = '빈칸으로 두면 랜덤 숫자 자동 호출';
+      } else if (mode === 'number-custom') {
+        document.getElementById('turnInputTitle').textContent = '✏️ 숫자를 직접 입력하세요';
+        callInput.placeholder = '1~25 사이 숫자 입력';
+        randomHint.textContent = '보드에 있는 숫자를 선택하세요';
+      } else {
+        document.getElementById('turnInputTitle').textContent = '📝 단어를 선택하세요';
+        callInput.placeholder = '보드에 있는 단어 입력';
+        randomHint.textContent = '보드에 있는 단어 중 하나를 입력하세요';
+      }
+    } else {
+      turnInputBox.style.display = 'none';
+    }
+  } else if (!roomData.turnMode && roomData.status === 'playing') {
+    // Free-for-all mode (host calls)
+    turnBanner.style.display = 'none';
+    if (STATE.isHost) {
+      turnInputBox.style.display = '';
+      document.getElementById('turnInputTitle').textContent = '📢 항목 호출 (호스트)';
+    } else {
+      turnInputBox.style.display = 'none';
+    }
+  } else {
+    turnBanner.style.display = 'none';
+    turnInputBox.style.display = 'none';
+  }
+
+  // Bingo board
+  renderBoard(me, roomData);
+
+  // Bingo count
+  document.getElementById('myBingoCount').textContent = me.bingos;
+  const dots = document.getElementById('bingoDots').children;
+  for (let i = 0; i < 5; i++) {
+    dots[i].classList.toggle('filled', i < me.bingos);
+  }
+
+  // Scoreboard
+  const scoreList = document.getElementById('scoreList');
+  const sorted = Object.entries(roomData.players).sort((a,b) => b[1].bingos - a[1].bingos);
+  scoreList.innerHTML = sorted.map(([id, p]) => `
+    <div class="score-row ${id===STATE.myId?'me':''}">
+      <span class="score-name">${p.isHost?'👑 ':'🦎 '}${p.name}${id===STATE.myId?' (나)':''}</span>
+      <span class="score-bingos">${'★'.repeat(p.bingos)}${'☆'.repeat(5-p.bingos)} ${p.bingos}빙고</span>
+    </div>
+  `).join('');
+
+  // Timer
+  if (roomData.timerEnabled && roomData.status === 'playing') {
+    document.getElementById('timerBar').style.display = '';
+  }
+}
+
+function renderBoard(me, roomData) {
+  const board = document.getElementById('bingoBoard');
+  board.innerHTML = me.board.map((item, idx) => {
+    const isMarked = me.marked[idx];
+    const isCalled = roomData.calledItems.includes(item);
+    let cls = 'bingo-cell';
+    if (isMarked) cls += ' marked';
+    else if (isCalled) cls += ' called';
+
+    const canClick = isCalled && !isMarked && roomData.status === 'playing';
+    return `<button class="${cls}" onclick="${canClick ? `markCell(${idx})` : ''}" style="${!canClick?'cursor:default':''}">${item}</button>`;
+  }).join('');
+}
+
+function markCell(idx) {
+  const roomData = getRoomData(STATE.roomCode);
+  if (!roomData || roomData.status !== 'playing') return;
+  const me = roomData.players[STATE.myId];
+  if (!me || me.marked[idx]) return;
+
+  const item = me.board[idx];
+  if (!roomData.calledItems.includes(item)) { showToast('❌ 아직 호출되지 않은 항목입니다'); return; }
+
+  me.marked[idx] = true;
+  me.bingos = countBingos(me.marked);
+
+  const prevBingos = me.bingos;
+  if (me.bingos > prevBingos || true) {
+    if (me.bingos > 0) showBingoEffect(me.bingos);
+  }
+
+  if (checkWin(me.marked) && !roomData.winnerId) {
+    roomData.winnerId = STATE.myId;
+    roomData.status = 'finished';
+    roomData.players[STATE.myId] = me;
+    setRoomData(STATE.roomCode, roomData);
+    triggerVictory(true, me.name);
+    return;
+  }
+
+  roomData.players[STATE.myId] = me;
+  setRoomData(STATE.roomCode, roomData);
+  renderGame(roomData);
+}
+
+function submitCall() {
+  const roomData = getRoomData(STATE.roomCode);
+  if (!roomData || roomData.status !== 'playing') return;
+
+  const mode = roomData.mode;
+  let callInput = document.getElementById('callInput').value.trim();
+
+  if (mode === 'number-random') {
+    if (!callInput) {
+      // auto random
+      const called = roomData.calledItems.map(Number);
+      const remaining = Array.from({length:25},(_,i)=>i+1).filter(n => !called.includes(n));
+      if (remaining.length === 0) { showToast('모든 숫자가 호출되었습니다!'); return; }
+      callInput = String(remaining[Math.floor(Math.random() * remaining.length)]);
+    } else {
+      const n = parseInt(callInput);
+      if (isNaN(n) || n < 1 || n > 25) { showToast('1~25 사이의 숫자를 입력하세요'); return; }
+      if (roomData.calledItems.includes(String(n))) { showToast('이미 호출된 숫자입니다'); return; }
+      callInput = String(n);
+    }
+  } else if (mode === 'number-custom') {
+    const n = parseInt(callInput);
+    if (isNaN(n) || n < 1 || n > 25) { showToast('1~25 사이의 숫자를 입력하세요'); return; }
+    if (roomData.calledItems.includes(String(n))) { showToast('이미 호출된 숫자입니다'); return; }
+    callInput = String(n);
+  } else {
+    // word/emoji
+    if (!callInput) { showToast('항목을 입력하세요'); return; }
+    if (roomData.calledItems.includes(callInput)) { showToast('이미 호출된 항목입니다'); return; }
+    // validate it's on any board
+    const exists = Object.values(roomData.players).some(p => p.board.includes(callInput));
+    if (!exists && (mode === 'word' || mode === 'emoji')) {
+      showToast('⚠️ 보드에 없는 항목입니다'); return;
+    }
+  }
+
+  roomData.calledItems.push(callInput);
+  roomData.currentItem = callInput;
+
+  // Advance turn
+  if (roomData.turnMode) {
+    roomData.currentTurnIdx = (roomData.currentTurnIdx + 1) % roomData.turnOrder.length;
+  }
+
+  document.getElementById('callInput').value = '';
+  setRoomData(STATE.roomCode, roomData);
+  showToast(`📢 "${callInput}" 호출!`);
+  renderGame(roomData);
+}
+
+// ═══════════════════════════════════════
+//  VICTORY
+// ═══════════════════════════════════════
+function triggerVictory(isWinner, winnerName) {
+  const overlay = document.getElementById('victoryOverlay');
+  overlay.style.display = 'block';
+
+  const card = document.getElementById('victoryCard');
+  const title = document.getElementById('victoryTitle');
+  const subtitle = document.getElementById('victorySubtitle');
+  const emoji = document.getElementById('victoryEmoji');
+
+  if (isWinner) {
+    card.classList.remove('defeat-card');
+    emoji.textContent = '🎉';
+    title.style.color = 'var(--gold)';
+    title.textContent = '🏆 승리!';
+    subtitle.textContent = '5빙고 달성! 당신이 최고입니다! 🦎✨';
+    launchConfetti();
+  } else {
+    card.classList.add('defeat-card');
+    emoji.textContent = '😔';
+    title.style.color = 'var(--coral)';
+    title.textContent = '패배...';
+    subtitle.textContent = `${winnerName}님이 먼저 5빙고를 달성했습니다. 다음엔 꼭 이겨요! 💪`;
+  }
+}
+
+function closeVictory() {
+  document.getElementById('victoryOverlay').style.display = 'none';
+  // Cleanup room after game
+  cleanupRoom();
+  stopPoll();
+  showScreen('lobbyScreen');
+}
+
+function cleanupRoom() {
+  if (STATE.roomCode) {
+    // Remove player; if all gone, delete room
+    const roomData = getRoomData(STATE.roomCode);
+    if (roomData) {
+      delete roomData.players[STATE.myId];
+      if (Object.keys(roomData.players).length === 0) {
+        delStore('room_' + STATE.roomCode);
+      } else {
+        // Host migration
+        if (STATE.isHost) {
+          const remaining = Object.entries(roomData.players);
+          if (remaining.length > 0) {
+            remaining[0][1].isHost = true;
+            roomData.players[remaining[0][0]] = remaining[0][1];
+          }
+        }
+        setRoomData(STATE.roomCode, roomData);
+      }
+    }
+    STATE.roomCode = null;
+  }
+  localStorage.removeItem('gecko_myId');
+  localStorage.removeItem('gecko_myRoom');
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#f5c842','#7ec850','#e85c5c','#5cc8e8','#e8963a','#fff'];
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = Math.random() * 10 + 6;
+    const isCircle = Math.random() > 0.5;
+    piece.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      border-radius: ${isCircle ? '50%' : '2px'};
+      animation-duration: ${Math.random() * 2 + 2}s;
+      animation-delay: ${Math.random() * 1}s;
+    `;
+    container.appendChild(piece);
+  }
+}
+
+function showBingoEffect(count) {
+  showToast(`🎊 ${count}빙고 달성!`);
+}
+
+// ═══════════════════════════════════════
+//  POLL / SYNC
+// ═══════════════════════════════════════
+function startPoll() {
+  stopPoll();
+  STATE.pollInterval = setInterval(poll, 800);
+}
+function stopPoll() {
+  if (STATE.pollInterval) { clearInterval(STATE.pollInterval); STATE.pollInterval = null; }
+}
+
+let _lastTs = 0;
+function poll() {
+  if (!STATE.roomCode) return;
+
+  // Update my heartbeat
+  const roomData = getRoomData(STATE.roomCode);
+  if (!roomData) {
+    // Room deleted
+    stopPoll();
+    showToast('방이 사라졌습니다');
+    showScreen('lobbyScreen');
+    return;
+  }
+
+  if (roomData.players[STATE.myId]) {
+    roomData.players[STATE.myId].lastSeen = Date.now();
+    roomData.players[STATE.myId].online = true;
+  }
+
+  // Host migration: if host gone > 5s, promote next player
+  const hostEntry = Object.entries(roomData.players).find(([,p]) => p.isHost);
+  if (hostEntry) {
+    const [hostId, hostPlayer] = hostEntry;
+    if (hostId !== STATE.myId && hostPlayer.lastSeen && Date.now() - hostPlayer.lastSeen > 5000) {
+      // Host seems disconnected
+      delete roomData.players[hostId];
+      // Promote oldest remaining
+      const remaining = Object.keys(roomData.players);
+      if (remaining.length > 0) {
+        // Make the first remaining player host
+        const newHostId = remaining[0];
+        roomData.players[newHostId].isHost = true;
+        roomData.turnOrder = roomData.turnOrder.filter(id => id !== hostId);
+        if (STATE.myId === newHostId) {
+          STATE.isHost = true;
+          showToast('👑 당신이 새 방장이 되었습니다!');
+        }
+      }
+    }
+  }
+
+  // Skip offline players in turn
+  if (roomData.status === 'playing' && roomData.turnMode) {
+    const currentId = roomData.turnOrder[roomData.currentTurnIdx % roomData.turnOrder.length];
+    const currentP = roomData.players[currentId];
+    if (currentP && currentP.lastSeen && Date.now() - currentP.lastSeen > 8000) {
+      // Auto-skip
+      roomData.currentTurnIdx = (roomData.currentTurnIdx + 1) % roomData.turnOrder.length;
+      showToast(`⏭️ ${currentP.name}님이 오프라인 - 자동 스킵`);
+    }
+  }
+
+  setRoomData(STATE.roomCode, roomData);
+
+  if (roomData._ts === _lastTs) return;
+  _lastTs = roomData._ts;
+
+  syncFromStore(roomData);
+}
+
+let _shownVictory = false;
+
+function syncFromStore(roomData) {
+  roomData = roomData || getRoomData(STATE.roomCode);
+  if (!roomData) return;
+
+  // Update local state
+  STATE.isHost = roomData.players[STATE.myId]?.isHost || false;
+
+  if (roomData.status === 'waiting') {
+    const current = document.getElementById('waitingScreen');
+    if (!current.classList.contains('active')) {
+      showWaiting();
+    } else {
+      renderWaitingPlayers();
+    }
+    // Update host buttons
+    document.getElementById('hostSetupButtons').style.display = STATE.isHost ? 'block' : 'none';
+    document.getElementById('guestWaitMsg').style.display = STATE.isHost ? 'none' : 'block';
+  } else if (roomData.status === 'playing') {
+    _shownVictory = false;
+    const current = document.getElementById('gameScreen');
+    if (!current.classList.contains('active')) {
+      showGameScreen(roomData);
+    } else {
+      renderGame(roomData);
+    }
+  } else if (roomData.status === 'finished') {
+    if (!_shownVictory) {
+      _shownVictory = true;
+      const winnerId = roomData.winnerId;
+      const winnerName = roomData.players[winnerId]?.name || '?';
+      const isMe = winnerId === STATE.myId;
+
+      const current = document.getElementById('gameScreen');
+      if (!current.classList.contains('active')) showGameScreen(roomData);
+      else renderGame(roomData);
+
+      setTimeout(() => triggerVictory(isMe, winnerName), 600);
+
+      // Schedule room cleanup
+      setTimeout(() => {
+        delStore('room_' + STATE.roomCode);
+      }, 30000);
+    }
+  }
+}
+
+// ═══════════════════════════════════════
+//  LEAVE / CLEANUP
+// ═══════════════════════════════════════
+function leaveRoom() {
+  stopPoll();
+  cleanupRoom();
+  STATE.myId = null;
+  STATE.myName = '';
+  STATE.roomCode = null;
+  STATE.isHost = false;
+  STATE.pendingWords = [];
+  _shownVictory = false;
+  showScreen('lobbyScreen');
+}
+
+function confirmLeave() {
+  if (confirm('게임에서 나가시겠습니까?')) leaveRoom();
+}
+
+// ═══════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ''; }, 3000); }
+}
+
+function showToast(msg) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ═══════════════════════════════════════
+//  RESUME SESSION
+// ═══════════════════════════════════════
+window.addEventListener('load', () => {
+  const savedId = localStorage.getItem('gecko_myId');
+  const savedRoom = localStorage.getItem('gecko_myRoom');
+  if (savedId && savedRoom) {
+    const roomData = getRoomData(savedRoom);
+    if (roomData && roomData.players[savedId]) {
+      STATE.myId = savedId;
+      STATE.myName = roomData.players[savedId].name;
+      STATE.roomCode = savedRoom;
+      STATE.isHost = roomData.players[savedId].isHost;
+      startPoll();
+      syncFromStore(roomData);
+      return;
+    }
+  }
+  // Clean stale data
+  localStorage.removeItem('gecko_myId');
+  localStorage.removeItem('gecko_myRoom');
+});
+
+// Cleanup old rooms on load
+(function cleanOldRooms() {
+  const cutoff = Date.now() - 2 * 60 * 60 * 1000; // 2 hours
+  Object.keys(localStorage).forEach(key => {
+    if (!key.startsWith('gecko_room_')) return;
+    try {
+      const data = JSON.parse(localStorage.getItem(key));
+      if (data && data._ts && data._ts < cutoff) localStorage.removeItem(key);
+    } catch {}
+  });
+})();
+</script>
+</body>
+</html>
