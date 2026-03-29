@@ -16,7 +16,6 @@ body{font-family:"Noto Sans KR",sans-serif;background:var(--jungle);color:var(--
 input,select,textarea{width:100%;background:rgba(0,0,0,0.35);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--cream);font-family:"Noto Sans KR",sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:0;}
 input:focus,select:focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(126,200,80,0.15);}
 .lobby-card{background:rgba(20,40,20,0.85);border:2px solid var(--lime);border-radius:24px;padding:32px;width:100%;max-width:400px;box-shadow:var(--glow),0 20px 60px rgba(0,0,0,0.5);}
-.gecko-img{display:block;margin:0 auto 12px;width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(126,200,80,0.5));animation:geckoFloat 3s ease-in-out infinite;}
 @keyframes geckoFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
 h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:var(--lime);text-shadow:0 0 30px rgba(126,200,80,0.6);margin-bottom:3px;}
 .subtitle{text-align:center;color:rgba(255,255,255,0.5);font-size:0.82rem;margin-bottom:22px;}
@@ -122,28 +121,30 @@ h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:v
 </head>
 <body>
 
+<!-- 로비 화면 -->
 <div id="lobbyScreen" class="screen active">
   <div class="lobby-card">
-    <div style="font-size:5rem; text-align:center; animation:geckoFloat 3s ease-in-out infinite; filter:drop-shadow(0 4px 16px rgba(126,200,80,0.5));">🦎</div>
+    <div style="font-size:5rem;text-align:center;animation:geckoFloat 3s ease-in-out infinite;filter:drop-shadow(0 4px 16px rgba(126,200,80,0.5));">🦎</div>
     <h1 class="title">게코 빙고</h1>
     <p class="subtitle">친구와 함께하는 실시간 멀티 빙고!</p>
     <div class="field-group">
       <label>닉네임</label>
       <input type="text" id="nameInput" placeholder="닉네임 (최대 8자)" maxlength="8"/>
     </div>
-    <button class="btn btn-primary" onclick="createRoom()">🏠 방 만들기</button>
+    <button class="btn btn-primary" id="createBtn" onclick="createRoom()">🏠 방 만들기</button>
     <div class="divider">또는</div>
     <div class="field-group">
       <label>방 코드 (4자리)</label>
       <div class="input-row">
         <input type="text" id="codeInput" placeholder="1234" maxlength="4" style="text-align:center;letter-spacing:0.2em;font-size:1.2rem;"/>
-        <button class="btn-inline" onclick="joinRoom()">참가</button>
+        <button class="btn-inline" id="joinBtn" onclick="joinRoom()">참가</button>
       </div>
     </div>
     <p class="error-msg" id="lobbyError"></p>
   </div>
 </div>
 
+<!-- 설정 화면 -->
 <div id="setupScreen" class="screen">
   <div class="setup-card">
     <h2>⚙️ 게임 설정</h2>
@@ -177,6 +178,7 @@ h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:v
   </div>
 </div>
 
+<!-- 대기실 화면 -->
 <div id="waitingScreen" class="screen">
   <div class="lobby-card" style="max-width:440px;">
     <div style="text-align:center;margin-bottom:14px;">
@@ -200,6 +202,7 @@ h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:v
   </div>
 </div>
 
+<!-- 게임 화면 -->
 <div id="gameScreen" class="screen">
   <div class="game-layout">
     <div class="game-header">
@@ -237,6 +240,7 @@ h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:v
   </div>
 </div>
 
+<!-- 승리/패배 오버레이 -->
 <div id="victoryOverlay" style="display:none;">
   <div class="confetti-container" id="confetti"></div>
   <div class="overlay">
@@ -244,7 +248,7 @@ h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:v
       <div style="font-size:2.8rem;margin-bottom:6px;" id="vEmoji">🎉</div>
       <div class="victory-title" id="vTitle">승리!</div>
       <div class="victory-sub" id="vSub"></div>
-      <div style="font-size:4rem; margin:10px auto; display:block; filter:drop-shadow(0 4px 12px rgba(126,200,80,0.5));">🏆</div>
+      <div style="font-size:4rem;margin:10px auto;display:block;filter:drop-shadow(0 4px 12px rgba(126,200,80,0.5));">🏆</div>
       <button class="btn btn-primary" onclick="closeVictory()" style="width:auto;padding:11px 28px;display:inline-block;margin-top:6px;">확인</button>
     </div>
   </div>
@@ -253,7 +257,7 @@ h1.title{font-family:"Jua",sans-serif;font-size:2.2rem;text-align:center;color:v
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ════════ FIREBASE 연결 및 초기화 ════════
+// ════════ FIREBASE 설정 ════════
 const firebaseConfig = {
   apiKey: "AIzaSyDtuLXJYcb2Tc0BhLl9VB5IG8g3CREghh0",
   authDomain: "work-4250.firebaseapp.com",
@@ -261,266 +265,743 @@ const firebaseConfig = {
   projectId: "work-4250",
   storageBucket: "work-4250.firebasestorage.app",
   messagingSenderId: "964530150246",
-  appId: "1:964530150246:web:4ffbb0ff1e48c8880bc6a7",
-  measurementId: "G-1LP971RER5"
+  appId: "1:964530150246:web:4ffbb0ff1e48c8880bc6a7"
 };
 
 let db = null;
+
 window.addEventListener("load", () => {
   try {
-    if (firebase.apps.length === 0) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+    console.log("✅ Firebase 연결 성공");
     resumeSession();
   } catch (e) {
-    alert("파이어베이스 연결 실패: " + e.message);
+    console.error("Firebase 연결 실패:", e);
+    showError("lobbyError", "서버 연결 실패: " + e.message);
   }
 });
 
-// ════════ 데이터베이스 래퍼 ════════
-async function dbSet(p,v){await db.ref(p).set(v);}
-async function dbUpdate(p,v){await db.ref(p).update(v);}
-async function dbGet(p){const s=await db.ref(p).once("value");return s.val();}
-async function dbRemove(p){await db.ref(p).remove();}
-const _lis={};
-function dbListen(p,cb){
-  const r=db.ref(p);r.on("value",s=>cb(s.val()));return()=>r.off("value");
+// ════════ DB 헬퍼 ════════
+// Firebase Realtime DB는 배열을 {0:val,1:val...} 객체로 저장함
+// 읽어올 때 반드시 toArr()로 변환 필요
+function toArr(val, len) {
+  if (!val) return Array(len).fill(false);
+  if (Array.isArray(val)) return val;
+  // Firebase가 객체로 변환한 배열 복원
+  const result = [];
+  const maxKey = Math.max(...Object.keys(val).map(Number), len - 1);
+  for (let i = 0; i <= maxKey; i++) result.push(val[i] !== undefined ? val[i] : false);
+  return result;
 }
 
-// ════════ STATE ════════
-let myId=null,myName="",roomCode=null,isHost=false;
-let gameMode="number-random",turnModeOn=true,timerOn=false,pendingWords=[];
-let _unsubRoom=null,shownVictory=false;
-
-// ════════ BINGO LOGIC ════════
-function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
-function genBoard(mode,words){if(mode==="number-random"||mode==="number-custom")return shuffle(Array.from({length:25},(_,i)=>String(i+1)));return shuffle([...words]);}
-function countBingos(m){let c=0;for(let r=0;r<5;r++)if([0,1,2,3,4].every(col=>m[r*5+col]))c++;for(let col=0;col<5;col++)if([0,1,2,3,4].every(r=>m[r*5+col]))c++;if([0,6,12,18,24].every(i=>m[i]))c++;if([4,8,12,16,20].every(i=>m[i]))c++;return c;}
-function checkWin(m){return countBingos(m)>=5;}
-
-// ════════ SCREENS ════════
-function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
-
-// ════════ LOBBY ════════
-async function createRoom(){
-  const name=document.getElementById("nameInput").value.trim();
-  if(!name){showError("lobbyError","닉네임을 입력하세요");return;}
-  const code=String(Math.floor(1000+Math.random()*9000));
-  myId="p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
-  myName=name;roomCode=code;isHost=true;
-  const player={name,isHost:true,board:genBoard("number-random",[]),marked:Array(25).fill(false),bingos:0,lastSeen:Date.now()};
-  await dbSet("rooms/"+code,{code,status:"waiting",mode:"number-random",turnMode:true,timerEnabled:false,customWords:[],turnOrder:[myId],currentTurnIdx:0,calledItems:[],currentItem:null,winnerId:null,players:{[myId]:player}});
-  saveSession();subscribeRoom();showWaiting();
+async function dbSet(p, v) {
+  await db.ref(p).set(v);
+}
+async function dbUpdate(p, v) {
+  await db.ref(p).update(v);
+}
+async function dbGet(p) {
+  const s = await db.ref(p).once("value");
+  return s.val();
+}
+async function dbRemove(p) {
+  await db.ref(p).remove();
 }
 
-async function joinRoom(){
-  const name=document.getElementById("nameInput").value.trim();
-  const code=document.getElementById("codeInput").value.trim();
-  if(!name){showError("lobbyError","닉네임을 입력하세요");return;}
-  if(code.length!==4){showError("lobbyError","4자리 방 코드를 입력하세요");return;}
-  const data=await dbGet("rooms/"+code);
-  if(!data){showError("lobbyError","방을 찾을 수 없습니다 ❌");return;}
-  if(data.status!=="waiting"){showError("lobbyError","이미 진행 중인 게임입니다");return;}
-  myId="p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
-  myName=name;roomCode=code;isHost=false;
-  const board=genBoard(data.mode,data.customWords||[]);
-  const player={name,isHost:false,board,marked:Array(25).fill(false),bingos:0,lastSeen:Date.now()};
-  const newOrder=[...(data.turnOrder||[]),myId];
-  await dbUpdate("rooms/"+code,{["players/"+myId]:player,turnOrder:newOrder});
-  saveSession();subscribeRoom();showWaiting();
+let _unsubRoom = null;
+function dbListen(p, cb) {
+  const r = db.ref(p);
+  r.on("value", s => cb(s.val()));
+  return () => r.off("value");
 }
 
-// ════════ SUBSCRIBE ════════
-function subscribeRoom(){
-  if(_unsubRoom){_unsubRoom();_unsubRoom=null;}
-  if(!roomCode)return;
-  _unsubRoom=dbListen("rooms/"+roomCode,data=>{
-    if(!data){showToast("방이 사라졌습니다");leaveRoom();return;}
+// ════════ 상태 변수 ════════
+let myId = null, myName = "", roomCode = null, isHost = false;
+let gameMode = "number-random", turnModeOn = true, timerOn = false, pendingWords = [];
+let shownVictory = false;
+let _busy = false; // 중복 클릭 방지
+
+// ════════ 빙고 로직 ════════
+function shuffle(a) {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+
+function genBoard(mode, words) {
+  if (mode === "number-random" || mode === "number-custom")
+    return shuffle(Array.from({ length: 25 }, (_, i) => String(i + 1)));
+  return shuffle([...words]);
+}
+
+function countBingos(markedRaw) {
+  // marked는 Firebase에서 객체로 올 수 있으므로 변환
+  const m = toArr(markedRaw, 25);
+  let c = 0;
+  for (let r = 0; r < 5; r++) if ([0,1,2,3,4].every(col => m[r*5+col])) c++;
+  for (let col = 0; col < 5; col++) if ([0,1,2,3,4].every(r => m[r*5+col])) c++;
+  if ([0,6,12,18,24].every(i => m[i])) c++;
+  if ([4,8,12,16,20].every(i => m[i])) c++;
+  return c;
+}
+
+function checkWin(markedRaw) {
+  return countBingos(markedRaw) >= 5;
+}
+
+// ════════ 화면 전환 ════════
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// ════════ 로비 ════════
+async function createRoom() {
+  if (_busy) return;
+  const name = document.getElementById("nameInput").value.trim();
+  if (!name) { showError("lobbyError", "닉네임을 입력하세요"); return; }
+  if (!db) { showError("lobbyError", "서버에 연결 중입니다. 잠시 후 다시 시도하세요."); return; }
+
+  _busy = true;
+  const btn = document.getElementById("createBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ 방 만드는 중...";
+
+  try {
+    // 겹치지 않는 코드 생성
+    let code, exists = true;
+    let attempts = 0;
+    while (exists && attempts < 10) {
+      code = String(Math.floor(1000 + Math.random() * 9000));
+      const check = await dbGet("rooms/" + code);
+      exists = !!check;
+      attempts++;
+    }
+    if (exists) { showError("lobbyError", "방 생성 실패. 다시 시도하세요."); return; }
+
+    myId = "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    myName = name;
+    roomCode = code;
+    isHost = true;
+
+    const board = genBoard("number-random", []);
+    const player = {
+      name,
+      isHost: true,
+      board: board,
+      marked: Array(25).fill(false),
+      bingos: 0,
+      lastSeen: Date.now()
+    };
+
+    const roomData = {
+      code,
+      status: "waiting",
+      mode: "number-random",
+      turnMode: true,
+      timerEnabled: false,
+      customWords: [],
+      turnOrder: [myId],
+      currentTurnIdx: 0,
+      calledItems: [],
+      currentItem: null,
+      winnerId: null,
+      players: { [myId]: player }
+    };
+
+    await dbSet("rooms/" + code, roomData);
+    saveSession();
+    subscribeRoom();
+    showWaiting();
+  } catch (e) {
+    console.error("방 만들기 오류:", e);
+    showError("lobbyError", "방 만들기 실패: " + e.message);
+  } finally {
+    _busy = false;
+    btn.disabled = false;
+    btn.textContent = "🏠 방 만들기";
+  }
+}
+
+async function joinRoom() {
+  if (_busy) return;
+  const name = document.getElementById("nameInput").value.trim();
+  const code = document.getElementById("codeInput").value.trim();
+  if (!name) { showError("lobbyError", "닉네임을 입력하세요"); return; }
+  if (code.length !== 4) { showError("lobbyError", "4자리 방 코드를 입력하세요"); return; }
+  if (!db) { showError("lobbyError", "서버에 연결 중입니다. 잠시 후 다시 시도하세요."); return; }
+
+  _busy = true;
+  const btn = document.getElementById("joinBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ 참가 중...";
+
+  try {
+    const data = await dbGet("rooms/" + code);
+    if (!data) { showError("lobbyError", "방을 찾을 수 없습니다 ❌"); return; }
+    if (data.status !== "waiting") { showError("lobbyError", "이미 진행 중인 게임입니다"); return; }
+
+    myId = "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    myName = name;
+    roomCode = code;
+    isHost = false;
+
+    const board = genBoard(data.mode, toArr(data.customWords, 0).filter(Boolean));
+    const player = {
+      name,
+      isHost: false,
+      board: board,
+      marked: Array(25).fill(false),
+      bingos: 0,
+      lastSeen: Date.now()
+    };
+
+    // ★ 핵심 수정: players 경로에 객체 통째로 set, turnOrder는 별도 update
+    const existingOrder = data.turnOrder
+      ? (Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder))
+      : [];
+    const newOrder = [...existingOrder, myId];
+
+    // 플레이어 데이터를 먼저 set (경로 충돌 방지)
+    await dbSet("rooms/" + code + "/players/" + myId, player);
+    await dbUpdate("rooms/" + code, { turnOrder: newOrder });
+
+    saveSession();
+    subscribeRoom();
+    showWaiting();
+  } catch (e) {
+    console.error("방 참가 오류:", e);
+    showError("lobbyError", "방 참가 실패: " + e.message);
+  } finally {
+    _busy = false;
+    btn.disabled = false;
+    btn.textContent = "참가";
+  }
+}
+
+// ════════ 실시간 구독 ════════
+function subscribeRoom() {
+  if (_unsubRoom) { _unsubRoom(); _unsubRoom = null; }
+  if (!roomCode) return;
+  _unsubRoom = dbListen("rooms/" + roomCode, data => {
+    if (!data) {
+      showToast("방이 사라졌습니다");
+      clearSession();
+      showScreen("lobbyScreen");
+      return;
+    }
     onRoomUpdate(data);
   });
 }
 
-setInterval(async()=>{
-  if(!roomCode||!myId)return;
-  await dbUpdate("rooms/"+roomCode+"/players/"+myId,{lastSeen:Date.now()});
-  const data=await dbGet("rooms/"+roomCode);
-  if(!data||!data.players)return;
-  const hostE=Object.entries(data.players).find(([,p])=>p.isHost);
-  if(!hostE)return;
-  const[hostId,hP]=hostE;
-  if(hostId===myId)return;
-  if(Date.now()-(hP.lastSeen||0)>6000){
-    const rem=Object.entries(data.players).filter(([id])=>id!==hostId);
-    if(!rem.length){await dbRemove("rooms/"+roomCode);return;}
-    const[nhId]=rem[0];
-    const upd={};
-    upd["players/"+hostId+"/isHost"]=false;
-    upd["players/"+nhId+"/isHost"]=true;
-    const nto=(data.turnOrder||[]).filter(id=>id!==hostId);
-    upd["turnOrder"]=nto;
-    let idx=data.currentTurnIdx||0;
-    if(nto.length&&nto[idx%nto.length]===hostId)idx=(idx+1)%nto.length;
-    upd["currentTurnIdx"]=idx;
-    await dbUpdate("rooms/"+roomCode,upd);
-    if(nhId===myId){isHost=true;showToast("👑 당신이 새 방장이 되었습니다!");}
+// ════════ 호스트 감시 (접속 끊김 감지) ════════
+setInterval(async () => {
+  if (!roomCode || !myId || !db) return;
+  try {
+    await dbUpdate("rooms/" + roomCode + "/players/" + myId, { lastSeen: Date.now() });
+    const data = await dbGet("rooms/" + roomCode);
+    if (!data || !data.players) return;
+
+    const hostEntry = Object.entries(data.players).find(([, p]) => p.isHost);
+    if (!hostEntry) return;
+    const [hostId, hostP] = hostEntry;
+    if (hostId === myId) return; // 내가 호스트면 패스
+
+    if (Date.now() - (hostP.lastSeen || 0) > 8000) {
+      const rem = Object.entries(data.players).filter(([id]) => id !== hostId);
+      if (!rem.length) { await dbRemove("rooms/" + roomCode); return; }
+      const [newHostId] = rem[0];
+      const existTO = data.turnOrder
+        ? (Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder))
+        : [];
+      const nto = existTO.filter(id => id !== hostId);
+      let idx = data.currentTurnIdx || 0;
+      if (nto.length && nto[idx % nto.length] === hostId) idx = (idx + 1) % nto.length;
+
+      const upd = {};
+      upd["players/" + hostId + "/isHost"] = false;
+      upd["players/" + newHostId + "/isHost"] = true;
+      upd["turnOrder"] = nto;
+      upd["currentTurnIdx"] = idx;
+      await dbUpdate("rooms/" + roomCode, upd);
+
+      if (newHostId === myId) {
+        isHost = true;
+        showToast("👑 당신이 새 방장이 되었습니다!");
+      }
+    }
+  } catch (e) {
+    console.warn("호스트 감시 오류:", e);
   }
-},3000);
+}, 3000);
 
-// ════════ ROOM UPDATE ════════
-function onRoomUpdate(data){
-  isHost=data.players?.[myId]?.isHost||false;
-  const cur=document.querySelector(".screen.active")?.id;
-  if(data.status==="waiting"){if(cur!=="waitingScreen"&&cur!=="setupScreen")showScreen("waitingScreen");renderWaiting(data);}
-  else if(data.status==="playing"){shownVictory=false;if(cur!=="gameScreen")showScreen("gameScreen");renderGame(data);}
-  else if(data.status==="finished"){if(cur!=="gameScreen")showScreen("gameScreen");renderGame(data);if(!shownVictory){shownVictory=true;setTimeout(()=>showVictory(data),600);}}
-}
+// ════════ 방 상태 업데이트 처리 ════════
+function onRoomUpdate(data) {
+  isHost = data.players?.[myId]?.isHost || false;
+  const cur = document.querySelector(".screen.active")?.id;
 
-function showWaiting(){showScreen("waitingScreen");document.getElementById("waitRoomCode").textContent=roomCode;}
-function renderWaiting(data){
-  if(!data.players)return;
-  document.getElementById("waitRoomCode").textContent=roomCode;
-  const ps=data.players,count=Object.keys(ps).length;
-  document.getElementById("waitPlayerCount").textContent=count;
-  document.getElementById("waitPlayerList").innerHTML=Object.entries(ps).map(([id,p])=>`<div class="player-list-item ${id===myId?"me":""}">${p.isHost?"👑":"🦎"} <span style="font-weight:700;${id===myId?"color:var(--lime)":""}">${p.name}${id===myId?" (나)":""}</span>${p.isHost?'<span class="badge badge-host">방장</span>':""}</div>`).join("");
-  document.getElementById("hostBtns").style.display=isHost?"block":"none";
-  document.getElementById("guestWait").style.display=isHost?"none":"block";
-  const sb=document.getElementById("startBtn");if(sb)sb.disabled=count<2;
+  if (data.status === "waiting") {
+    if (cur !== "waitingScreen" && cur !== "setupScreen") showScreen("waitingScreen");
+    renderWaiting(data);
+  } else if (data.status === "playing") {
+    shownVictory = false;
+    if (cur !== "gameScreen") showScreen("gameScreen");
+    renderGame(data);
+  } else if (data.status === "finished") {
+    if (cur !== "gameScreen") showScreen("gameScreen");
+    renderGame(data);
+    if (!shownVictory) { shownVictory = true; setTimeout(() => showVictory(data), 600); }
+  }
 }
 
-// ════════ SETUP ════════
-function selectMode(mode){
-  gameMode=mode;
-  document.querySelectorAll(".mode-btn").forEach(b=>b.classList.remove("selected"));
-  document.getElementById("mode-"+mode).classList.add("selected");
-  document.getElementById("wordInputSection").style.display=(mode==="word"||mode==="emoji")?"block":"none";
-  document.getElementById("wordInputField").placeholder=mode==="emoji"?"이모지 입력 (예: 🍎)":"단어 입력 후 Enter";
-}
-function toggleTurn(){turnModeOn=!turnModeOn;document.getElementById("turnToggle").classList.toggle("on",turnModeOn);}
-function toggleTimer(){timerOn=!timerOn;document.getElementById("timerToggle").classList.toggle("on",timerOn);}
-function addWord(){const inp=document.getElementById("wordInputField");const w=inp.value.trim();if(!w)return;if(pendingWords.length>=25){showError("setupError","25개가 최대입니다");return;}if(pendingWords.includes(w)){showError("setupError","이미 추가됨");return;}pendingWords.push(w);inp.value="";renderWordTags();}
-document.addEventListener("keydown",e=>{if(e.key==="Enter"&&document.activeElement.id==="wordInputField")addWord();if(e.key==="Enter"&&document.activeElement.id==="callInput")submitCall();});
-function removeWord(i){pendingWords.splice(i,1);renderWordTags();}
-function renderWordTags(){document.getElementById("wordTagsContainer").innerHTML=pendingWords.map((w,i)=>`<div class="word-tag">${w}<button onclick="removeWord(${i})">×</button></div>`).join("");document.getElementById("wordCount").textContent=pendingWords.length+" / 25개";}
-async function saveSetup(){
-  if((gameMode==="word"||gameMode==="emoji")&&pendingWords.length<25){showError("setupError","단어 25개 필요 (현재 "+pendingWords.length+"개)");return;}
-  const data=await dbGet("rooms/"+roomCode);if(!data)return;
-  const words=[...pendingWords];
-  const upd={mode:gameMode,turnMode:turnModeOn,timerEnabled:timerOn,customWords:words};
-  Object.keys(data.players||{}).forEach(id=>{upd["players/"+id+"/board"]=genBoard(gameMode,words);upd["players/"+id+"/marked"]=Array(25).fill(false);upd["players/"+id+"/bingos"]=0;});
-  await dbUpdate("rooms/"+roomCode,upd);
-  showScreen("waitingScreen");showToast("✅ 게임 설정 저장됨!");
-}
-async function hostStart(){
-  const data=await dbGet("rooms/"+roomCode);if(!data)return;
-  if(Object.keys(data.players||{}).length<2){showError("waitError","최소 2명 필요");return;}
-  const newOrder=shuffle(data.turnOrder||[]);
-  await dbUpdate("rooms/"+roomCode,{status:"playing",calledItems:[],currentItem:null,currentTurnIdx:0,turnOrder:newOrder,winnerId:null});
+function showWaiting() {
+  showScreen("waitingScreen");
+  document.getElementById("waitRoomCode").textContent = roomCode;
 }
 
-// ════════ GAME RENDER ════════
-function renderGame(data){
-  const me=data.players?.[myId];if(!me)return;
-  document.getElementById("gameCode").textContent="Room "+data.code;
-  const ps=data.players||{},to=data.turnOrder||[],idx=data.currentTurnIdx||0;
-  const ctId=to[idx%to.length];
-  document.getElementById("gamePlayerBar").innerHTML=Object.entries(ps).map(([id,p])=>{
-    let cls="player-chip";if(id===myId)cls+=" me";if(id===ctId&&data.turnMode&&data.status==="playing")cls+=" current-turn";
-    return `<div class="${cls}">${p.isHost?"👑 ":"🦎 "}${p.name}${id===myId?" (나)":""}${data.turnMode&&id===ctId?" 🎯":""}</div>`;
+function renderWaiting(data) {
+  if (!data.players) return;
+  document.getElementById("waitRoomCode").textContent = roomCode;
+  const ps = data.players;
+  const count = Object.keys(ps).length;
+  document.getElementById("waitPlayerCount").textContent = count;
+  document.getElementById("waitPlayerList").innerHTML = Object.entries(ps)
+    .map(([id, p]) => `<div class="player-list-item ${id === myId ? "me" : ""}">
+      ${p.isHost ? "👑" : "🦎"}
+      <span style="font-weight:700;${id === myId ? "color:var(--lime)" : ""}">${p.name}${id === myId ? " (나)" : ""}</span>
+      ${p.isHost ? '<span class="badge badge-host">방장</span>' : ""}
+    </div>`).join("");
+
+  document.getElementById("hostBtns").style.display = isHost ? "block" : "none";
+  document.getElementById("guestWait").style.display = isHost ? "none" : "block";
+
+  const sb = document.getElementById("startBtn");
+  if (sb) sb.disabled = count < 2;
+}
+
+// ════════ 게임 설정 ════════
+function selectMode(mode) {
+  gameMode = mode;
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("selected"));
+  document.getElementById("mode-" + mode).classList.add("selected");
+  document.getElementById("wordInputSection").style.display =
+    (mode === "word" || mode === "emoji") ? "block" : "none";
+  document.getElementById("wordInputField").placeholder =
+    mode === "emoji" ? "이모지 입력 (예: 🍎)" : "단어 입력 후 Enter";
+}
+
+function toggleTurn() {
+  turnModeOn = !turnModeOn;
+  document.getElementById("turnToggle").classList.toggle("on", turnModeOn);
+}
+function toggleTimer() {
+  timerOn = !timerOn;
+  document.getElementById("timerToggle").classList.toggle("on", timerOn);
+}
+
+function addWord() {
+  const inp = document.getElementById("wordInputField");
+  const w = inp.value.trim();
+  if (!w) return;
+  if (pendingWords.length >= 25) { showError("setupError", "25개가 최대입니다"); return; }
+  if (pendingWords.includes(w)) { showError("setupError", "이미 추가됨"); return; }
+  pendingWords.push(w);
+  inp.value = "";
+  renderWordTags();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && document.activeElement.id === "wordInputField") addWord();
+  if (e.key === "Enter" && document.activeElement.id === "callInput") submitCall();
+});
+
+function removeWord(i) { pendingWords.splice(i, 1); renderWordTags(); }
+
+function renderWordTags() {
+  document.getElementById("wordTagsContainer").innerHTML = pendingWords
+    .map((w, i) => `<div class="word-tag">${w}<button onclick="removeWord(${i})">×</button></div>`).join("");
+  document.getElementById("wordCount").textContent = pendingWords.length + " / 25개";
+}
+
+async function saveSetup() {
+  if ((gameMode === "word" || gameMode === "emoji") && pendingWords.length < 25) {
+    showError("setupError", "단어 25개 필요 (현재 " + pendingWords.length + "개)");
+    return;
+  }
+  const data = await dbGet("rooms/" + roomCode);
+  if (!data) return;
+  const words = [...pendingWords];
+  const upd = { mode: gameMode, turnMode: turnModeOn, timerEnabled: timerOn, customWords: words };
+  Object.keys(data.players || {}).forEach(id => {
+    upd["players/" + id + "/board"] = genBoard(gameMode, words);
+    upd["players/" + id + "/marked"] = Array(25).fill(false);
+    upd["players/" + id + "/bingos"] = 0;
+  });
+  await dbUpdate("rooms/" + roomCode, upd);
+  showScreen("waitingScreen");
+  showToast("✅ 게임 설정 저장됨!");
+}
+
+async function hostStart() {
+  if (_busy) return;
+  const data = await dbGet("rooms/" + roomCode);
+  if (!data) return;
+  const pCount = Object.keys(data.players || {}).length;
+  if (pCount < 2) { showError("waitError", "최소 2명이 필요합니다"); return; }
+
+  _busy = true;
+  try {
+    const existTO = data.turnOrder
+      ? (Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder))
+      : Object.keys(data.players);
+    const newOrder = shuffle(existTO);
+    await dbUpdate("rooms/" + roomCode, {
+      status: "playing",
+      calledItems: [],
+      currentItem: null,
+      currentTurnIdx: 0,
+      turnOrder: newOrder,
+      winnerId: null
+    });
+  } catch (e) {
+    console.error("게임 시작 오류:", e);
+    showError("waitError", "게임 시작 실패: " + e.message);
+  } finally {
+    _busy = false;
+  }
+}
+
+// ════════ 게임 화면 렌더링 ════════
+function renderGame(data) {
+  const me = data.players?.[myId];
+  if (!me) return;
+
+  document.getElementById("gameCode").textContent = "Room " + data.code;
+
+  // 상태 배지
+  const badge = document.getElementById("gameStatusBadge");
+  if (data.status === "finished") {
+    badge.className = "status-badge status-finished";
+    badge.textContent = "종료";
+  } else {
+    badge.className = "status-badge status-playing";
+    badge.textContent = "진행중";
+  }
+
+  const ps = data.players || {};
+  // ★ turnOrder: Firebase에서 객체로 올 수 있으므로 변환
+  const to = data.turnOrder
+    ? (Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder))
+    : [];
+  const idx = data.currentTurnIdx || 0;
+  const ctId = to.length ? to[idx % to.length] : null;
+
+  // 플레이어 칩
+  document.getElementById("gamePlayerBar").innerHTML = Object.entries(ps).map(([id, p]) => {
+    let cls = "player-chip";
+    if (id === myId) cls += " me";
+    if (id === ctId && data.turnMode && data.status === "playing") cls += " current-turn";
+    return `<div class="${cls}">${p.isHost ? "👑 " : "🦎 "}${p.name}${id === myId ? " (나)" : ""}${data.turnMode && id === ctId ? " 🎯" : ""}</div>`;
   }).join("");
-  const ci=data.calledItems||[];
-  const cd=document.getElementById("calledDisplay");
-  if(ci.length>0){cd.style.display="";document.getElementById("calledValue").textContent=data.currentItem||"-";const tot=data.mode?.startsWith("number")?25:(data.customWords?.length||25);document.getElementById("calledProgress").textContent=ci.length+" / "+tot+" 호출됨";document.getElementById("calledHistory").innerHTML=[...ci].reverse().slice(0,20).map(i=>`<span class="hist-chip">${i}</span>`).join("");}
-  const isMyTurn=ctId===myId,tb=document.getElementById("turnBanner"),tib=document.getElementById("turnInputBox");
-  if(data.turnMode&&data.status==="playing"){
-    tb.style.display="";const cp=ps[ctId];
-    tb.innerHTML=isMyTurn?'🎯 <strong>당신의 차례입니다!</strong> 항목을 호출하세요':`⏳ <strong>${cp?.name}</strong>님의 차례...`;
-    tib.style.display=isMyTurn?"":"none";if(isMyTurn)setupCI(data.mode);
-  }else if(!data.turnMode&&isHost&&data.status==="playing"){tb.style.display="none";tib.style.display="";setupCI(data.mode);}
-  else{tb.style.display="none";tib.style.display="none";}
-  
-  document.getElementById("bingoBoard").innerHTML=(me.board||[]).map((item,i)=>{
-    const isMk=me.marked?.[i],isCl=ci.includes(item);let cls="bingo-cell";if(isMk)cls+=" marked";else if(isCl)cls+=" called";
-    const can=isCl&&!isMk&&data.status==="playing";
-    return `<button class="${cls}" ${can?`onclick="markCell(${i})"`:""} style="${!can?"cursor:default":""}">${item}</button>`;
+
+  // ★ calledItems: Firebase에서 객체로 올 수 있으므로 변환
+  const ci = data.calledItems
+    ? (Array.isArray(data.calledItems) ? data.calledItems : Object.values(data.calledItems))
+    : [];
+
+  const cd = document.getElementById("calledDisplay");
+  if (ci.length > 0) {
+    cd.style.display = "";
+    document.getElementById("calledValue").textContent = data.currentItem || "-";
+    const tot = data.mode?.startsWith("number") ? 25 : (data.customWords?.length || 25);
+    document.getElementById("calledProgress").textContent = ci.length + " / " + tot + " 호출됨";
+    document.getElementById("calledHistory").innerHTML =
+      [...ci].reverse().slice(0, 20).map(i => `<span class="hist-chip">${i}</span>`).join("");
+  } else {
+    cd.style.display = "none";
+  }
+
+  // 턴 배너 및 입력창
+  const isMyTurn = ctId === myId;
+  const tb = document.getElementById("turnBanner");
+  const tib = document.getElementById("turnInputBox");
+
+  if (data.turnMode && data.status === "playing") {
+    tb.style.display = "";
+    const cp = ps[ctId];
+    tb.innerHTML = isMyTurn
+      ? '🎯 <strong>당신의 차례입니다!</strong> 항목을 호출하세요'
+      : `⏳ <strong>${cp?.name || "?"}</strong>님의 차례...`;
+    tib.style.display = isMyTurn ? "" : "none";
+    if (isMyTurn) setupCI(data.mode);
+  } else if (!data.turnMode && isHost && data.status === "playing") {
+    tb.style.display = "none";
+    tib.style.display = "";
+    setupCI(data.mode);
+  } else {
+    tb.style.display = "none";
+    tib.style.display = "none";
+  }
+
+  // ★ board / marked: Firebase에서 객체로 올 수 있으므로 변환
+  const board = me.board
+    ? (Array.isArray(me.board) ? me.board : Object.values(me.board))
+    : [];
+  const marked = toArr(me.marked, 25);
+
+  document.getElementById("bingoBoard").innerHTML = board.map((item, i) => {
+    const isMk = marked[i];
+    const isCl = ci.includes(item);
+    let cls = "bingo-cell";
+    if (isMk) cls += " marked";
+    else if (isCl) cls += " called";
+    const can = isCl && !isMk && data.status === "playing";
+    return `<button class="${cls}" ${can ? `onclick="markCell(${i})"` : ""} style="${!can ? "cursor:default" : ""}">${item}</button>`;
   }).join("");
-  document.getElementById("myBingoCount").textContent=me.bingos||0;
-  const dots=document.getElementById("bingoDots").children;for(let i=0;i<5;i++)dots[i].classList.toggle("filled",i<(me.bingos||0));
-  const sorted=Object.entries(ps).sort((a,b)=>(b[1].bingos||0)-(a[1].bingos||0));
-  document.getElementById("scoreList").innerHTML=sorted.map(([id,p])=>`<div class="score-row ${id===myId?"me":""}"><span class="score-name">${p.isHost?"👑 ":"🦎 "}${p.name}${id===myId?" (나)":""}</span><span class="score-bingos">${"★".repeat(p.bingos||0)}${"☆".repeat(5-(p.bingos||0))} ${p.bingos||0}빙고</span></div>`).join("");
+
+  document.getElementById("myBingoCount").textContent = me.bingos || 0;
+  const dots = document.getElementById("bingoDots").children;
+  for (let i = 0; i < 5; i++) dots[i].classList.toggle("filled", i < (me.bingos || 0));
+
+  const sorted = Object.entries(ps).sort((a, b) => (b[1].bingos || 0) - (a[1].bingos || 0));
+  document.getElementById("scoreList").innerHTML = sorted.map(([id, p]) =>
+    `<div class="score-row ${id === myId ? "me" : ""}">
+      <span class="score-name">${p.isHost ? "👑 " : "🦎 "}${p.name}${id === myId ? " (나)" : ""}</span>
+      <span class="score-bingos">${"★".repeat(p.bingos || 0)}${"☆".repeat(5 - (p.bingos || 0))} ${p.bingos || 0}빙고</span>
+    </div>`).join("");
 }
 
-function setupCI(mode){
-  const inp=document.getElementById("callInput"),hint=document.getElementById("randomHint");
-  if(mode==="number-random"){document.getElementById("turnInputTitle").textContent="🎲 랜덤 또는 직접 숫자 입력";inp.placeholder="비워두면 자동 랜덤";inp.type="text";hint.textContent="빈칸이면 랜덤 숫자 자동 호출";}
-  else if(mode==="number-custom"){document.getElementById("turnInputTitle").textContent="✏️ 숫자 직접 입력 (1~25)";inp.placeholder="1~25 숫자";inp.type="text";hint.textContent="보드에 있는 숫자를 선택하세요";}
-  else{document.getElementById("turnInputTitle").textContent="📝 항목 선택";inp.placeholder="보드의 단어 입력";inp.type="text";hint.textContent="보드에 있는 항목 중 하나를 입력";}
+function setupCI(mode) {
+  const inp = document.getElementById("callInput");
+  const hint = document.getElementById("randomHint");
+  if (mode === "number-random") {
+    document.getElementById("turnInputTitle").textContent = "🎲 랜덤 또는 직접 숫자 입력";
+    inp.placeholder = "비워두면 자동 랜덤";
+    hint.textContent = "빈칸이면 랜덤 숫자 자동 호출";
+  } else if (mode === "number-custom") {
+    document.getElementById("turnInputTitle").textContent = "✏️ 숫자 직접 입력 (1~25)";
+    inp.placeholder = "1~25 숫자";
+    hint.textContent = "보드에 있는 숫자를 선택하세요";
+  } else {
+    document.getElementById("turnInputTitle").textContent = "📝 항목 선택";
+    inp.placeholder = "보드의 단어 입력";
+    hint.textContent = "보드에 있는 항목 중 하나를 입력";
+  }
 }
 
-async function markCell(ci){
-  const data=await dbGet("rooms/"+roomCode);if(!data||data.status!=="playing")return;
-  const me=data.players?.[myId];if(!me||me.marked?.[ci])return;
-  const item=me.board[ci];if(!(data.calledItems||[]).includes(item)){showToast("❌ 아직 호출되지 않은 항목");return;}
-  const nm=[...(me.marked||Array(25).fill(false))];nm[ci]=true;
-  const bingos=countBingos(nm),prev=me.bingos||0;
-  const upd={"players/"+myId+"/marked":nm,"players/"+myId+"/bingos":bingos};
-  if(bingos>prev)showToast("🎊 "+bingos+"빙고 달성!");
-  if(checkWin(nm)&&!data.winnerId){upd["winnerId"]=myId;upd["status"]="finished";}
-  await dbUpdate("rooms/"+roomCode,upd);
+// ════════ 셀 마킹 ════════
+async function markCell(cellIdx) {
+  const data = await dbGet("rooms/" + roomCode);
+  if (!data || data.status !== "playing") return;
+  const me = data.players?.[myId];
+  if (!me) return;
+
+  const marked = toArr(me.marked, 25);
+  if (marked[cellIdx]) return; // 이미 마킹됨
+
+  const board = Array.isArray(me.board) ? me.board : Object.values(me.board);
+  const item = board[cellIdx];
+
+  const ci = data.calledItems
+    ? (Array.isArray(data.calledItems) ? data.calledItems : Object.values(data.calledItems))
+    : [];
+  if (!ci.includes(item)) { showToast("❌ 아직 호출되지 않은 항목"); return; }
+
+  const nm = [...marked];
+  nm[cellIdx] = true;
+  const bingos = countBingos(nm);
+  const prev = me.bingos || 0;
+
+  const upd = {
+    ["players/" + myId + "/marked"]: nm,
+    ["players/" + myId + "/bingos"]: bingos
+  };
+  if (bingos > prev) showToast("🎊 " + bingos + "빙고 달성!");
+  if (checkWin(nm) && !data.winnerId) {
+    upd["winnerId"] = myId;
+    upd["status"] = "finished";
+  }
+  await dbUpdate("rooms/" + roomCode, upd);
 }
 
-async function submitCall(){
-  const data=await dbGet("rooms/"+roomCode);if(!data||data.status!=="playing")return;
-  const mode=data.mode;let val=document.getElementById("callInput").value.trim();
-  const called=data.calledItems||[];
-  if(mode==="number-random"){
-    if(!val){const rem=Array.from({length:25},(_,i)=>String(i+1)).filter(n=>!called.includes(n));if(!rem.length){showToast("모든 숫자 호출 완료!");return;}val=rem[Math.floor(Math.random()*rem.length)];}
-    else{const n=parseInt(val);if(isNaN(n)||n<1||n>25){showToast("1~25 숫자를 입력하세요");return;}if(called.includes(String(n))){showToast("이미 호출된 숫자");return;}val=String(n);}
-  }else if(mode==="number-custom"){const n=parseInt(val);if(isNaN(n)||n<1||n>25){showToast("1~25 숫자를 입력하세요");return;}if(called.includes(String(n))){showToast("이미 호출됨");return;}val=String(n);}
-  else{if(!val){showToast("항목을 입력하세요");return;}if(called.includes(val)){showToast("이미 호출된 항목");return;}}
-  const nCalled=[...called,val],nIdx=data.turnMode?((data.currentTurnIdx||0)+1)%(data.turnOrder||[myId]).length:(data.currentTurnIdx||0);
-  await dbUpdate("rooms/"+roomCode,{calledItems:nCalled,currentItem:val,currentTurnIdx:nIdx});
-  document.getElementById("callInput").value="";showToast('📢 "'+val+'" 호출!');
+// ════════ 항목 호출 ════════
+async function submitCall() {
+  if (_busy) return;
+  const data = await dbGet("rooms/" + roomCode);
+  if (!data || data.status !== "playing") return;
+
+  const mode = data.mode;
+  let val = document.getElementById("callInput").value.trim();
+  const called = data.calledItems
+    ? (Array.isArray(data.calledItems) ? data.calledItems : Object.values(data.calledItems))
+    : [];
+
+  if (mode === "number-random") {
+    if (!val) {
+      const rem = Array.from({ length: 25 }, (_, i) => String(i + 1)).filter(n => !called.includes(n));
+      if (!rem.length) { showToast("모든 숫자 호출 완료!"); return; }
+      val = rem[Math.floor(Math.random() * rem.length)];
+    } else {
+      const n = parseInt(val);
+      if (isNaN(n) || n < 1 || n > 25) { showToast("1~25 숫자를 입력하세요"); return; }
+      if (called.includes(String(n))) { showToast("이미 호출된 숫자"); return; }
+      val = String(n);
+    }
+  } else if (mode === "number-custom") {
+    const n = parseInt(val);
+    if (isNaN(n) || n < 1 || n > 25) { showToast("1~25 숫자를 입력하세요"); return; }
+    if (called.includes(String(n))) { showToast("이미 호출됨"); return; }
+    val = String(n);
+  } else {
+    if (!val) { showToast("항목을 입력하세요"); return; }
+    if (called.includes(val)) { showToast("이미 호출된 항목"); return; }
+  }
+
+  const to = data.turnOrder
+    ? (Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder))
+    : [myId];
+  const nCalled = [...called, val];
+  const nIdx = data.turnMode
+    ? ((data.currentTurnIdx || 0) + 1) % to.length
+    : (data.currentTurnIdx || 0);
+
+  _busy = true;
+  try {
+    await dbUpdate("rooms/" + roomCode, {
+      calledItems: nCalled,
+      currentItem: val,
+      currentTurnIdx: nIdx
+    });
+    document.getElementById("callInput").value = "";
+    showToast('📢 "' + val + '" 호출!');
+  } catch (e) {
+    console.error("호출 오류:", e);
+    showToast("❌ 호출 실패");
+  } finally {
+    _busy = false;
+  }
 }
 
-// ════════ VICTORY ════════
-function showVictory(data){
-  const wId=data.winnerId,wName=data.players?.[wId]?.name||"?",isW=wId===myId;
-  document.getElementById("victoryOverlay").style.display="block";
-  const card=document.getElementById("victoryCard");card.classList.toggle("defeat-card",!isW);
-  document.getElementById("vEmoji").textContent=isW?"🎉":"😔";
-  document.getElementById("vTitle").style.color=isW?"var(--gold)":"var(--coral)";
-  document.getElementById("vTitle").textContent=isW?"🏆 승리!":"패배...";
-  document.getElementById("vSub").textContent=isW?"5빙고 달성! 당신이 최고! 🦎✨":`${wName}님이 먼저 5빙고! 다음엔 이겨요 💪`;
-  if(isW)launchConfetti();
-  setTimeout(async()=>{try{await dbRemove("rooms/"+roomCode);}catch(e){}},30000);
-}
-function closeVictory(){document.getElementById("victoryOverlay").style.display="none";leaveRoom();}
-function launchConfetti(){
-  const c=document.getElementById("confetti");c.innerHTML="";
-  const cols=["#f5c842","#7ec850","#e85c5c","#5cc8e8","#e8963a","#fff"];
-  for(let i=0;i<80;i++){const p=document.createElement("div");p.className="confetti-piece";const col=cols[Math.floor(Math.random()*cols.length)];const sz=Math.random()*10+6;p.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${col};border-radius:${Math.random()>0.5?"50%":"2px"};animation-duration:${Math.random()*2+2}s;animation-delay:${Math.random()}s;`;c.appendChild(p);}
-}
-
-// ════════ LEAVE ════════
-async function leaveRoom(){
-  if(_unsubRoom){_unsubRoom();_unsubRoom=null;}
-  if(roomCode&&myId){const data=await dbGet("rooms/"+roomCode);if(data&&data.players){const rem=Object.entries(data.players).filter(([id])=>id!==myId);if(!rem.length){await dbRemove("rooms/"+roomCode);}else{const upd={"players/"+myId:null,turnOrder:(data.turnOrder||[]).filter(id=>id!==myId)};if(isHost&&rem.length)upd["players/"+rem[0][0]+"/isHost"]=true;await dbUpdate("rooms/"+roomCode,upd);}}}
-  clearSession();showScreen("lobbyScreen");document.getElementById("victoryOverlay").style.display="none";shownVictory=false;
-}
-function confirmLeave(){if(confirm("게임에서 나가시겠습니까?"))leaveRoom();}
-
-// ════════ SESSION ════════
-function saveSession(){localStorage.setItem("gecko_session",JSON.stringify({myId,myName,roomCode,isHost}));}
-function clearSession(){localStorage.removeItem("gecko_session");myId=null;myName="";roomCode=null;isHost=false;}
-async function resumeSession(){
-  const s=localStorage.getItem("gecko_session");if(!s)return;
-  try{const sess=JSON.parse(s);const data=await dbGet("rooms/"+sess.roomCode);if(!data||!data.players?.[sess.myId]){clearSession();return;}myId=sess.myId;myName=sess.myName;roomCode=sess.roomCode;isHost=sess.isHost;subscribeRoom();}catch{clearSession();}
+// ════════ 승리 처리 ════════
+function showVictory(data) {
+  const wId = data.winnerId;
+  const wName = data.players?.[wId]?.name || "?";
+  const isW = wId === myId;
+  document.getElementById("victoryOverlay").style.display = "block";
+  const card = document.getElementById("victoryCard");
+  card.classList.toggle("defeat-card", !isW);
+  document.getElementById("vEmoji").textContent = isW ? "🎉" : "😔";
+  document.getElementById("vTitle").style.color = isW ? "var(--gold)" : "var(--coral)";
+  document.getElementById("vTitle").textContent = isW ? "🏆 승리!" : "패배...";
+  document.getElementById("vSub").textContent = isW
+    ? "5빙고 달성! 당신이 최고! 🦎✨"
+    : `${wName}님이 먼저 5빙고! 다음엔 이겨요 💪`;
+  if (isW) launchConfetti();
+  // 30초 후 방 자동 삭제 (호스트만)
+  if (isHost) {
+    setTimeout(async () => {
+      try { await dbRemove("rooms/" + roomCode); } catch (e) {}
+    }, 30000);
+  }
 }
 
-// ════════ UTILS ════════
-function showError(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;setTimeout(()=>{el.textContent="";},3000);}}
-function showToast(msg){const c=document.getElementById("toastContainer");const t=document.createElement("div");t.className="toast";t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3000);}
+function closeVictory() {
+  document.getElementById("victoryOverlay").style.display = "none";
+  leaveRoom();
+}
+
+function launchConfetti() {
+  const c = document.getElementById("confetti");
+  c.innerHTML = "";
+  const cols = ["#f5c842","#7ec850","#e85c5c","#5cc8e8","#e8963a","#fff"];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement("div");
+    p.className = "confetti-piece";
+    const col = cols[Math.floor(Math.random() * cols.length)];
+    const sz = Math.random() * 10 + 6;
+    p.style.cssText = `left:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${col};border-radius:${Math.random()>0.5?"50%":"2px"};animation-duration:${Math.random()*2+2}s;animation-delay:${Math.random()}s;`;
+    c.appendChild(p);
+  }
+}
+
+// ════════ 나가기 ════════
+async function leaveRoom() {
+  if (_unsubRoom) { _unsubRoom(); _unsubRoom = null; }
+  if (roomCode && myId && db) {
+    try {
+      const data = await dbGet("rooms/" + roomCode);
+      if (data && data.players) {
+        const rem = Object.entries(data.players).filter(([id]) => id !== myId);
+        if (!rem.length) {
+          await dbRemove("rooms/" + roomCode);
+        } else {
+          const existTO = data.turnOrder
+            ? (Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder))
+            : [];
+          const upd = {
+            ["players/" + myId]: null,
+            turnOrder: existTO.filter(id => id !== myId)
+          };
+          if (isHost && rem.length) upd["players/" + rem[0][0] + "/isHost"] = true;
+          await dbUpdate("rooms/" + roomCode, upd);
+        }
+      }
+    } catch (e) { console.warn("나가기 오류:", e); }
+  }
+  clearSession();
+  showScreen("lobbyScreen");
+  document.getElementById("victoryOverlay").style.display = "none";
+  shownVictory = false;
+}
+
+function confirmLeave() {
+  if (confirm("게임에서 나가시겠습니까?")) leaveRoom();
+}
+
+// ════════ 세션 관리 ════════
+function saveSession() {
+  localStorage.setItem("gecko_session", JSON.stringify({ myId, myName, roomCode, isHost }));
+}
+function clearSession() {
+  localStorage.removeItem("gecko_session");
+  myId = null; myName = ""; roomCode = null; isHost = false;
+}
+async function resumeSession() {
+  const s = localStorage.getItem("gecko_session");
+  if (!s) return;
+  try {
+    const sess = JSON.parse(s);
+    if (!sess.roomCode || !sess.myId) { clearSession(); return; }
+    const data = await dbGet("rooms/" + sess.roomCode);
+    if (!data || !data.players?.[sess.myId]) { clearSession(); return; }
+    myId = sess.myId;
+    myName = sess.myName;
+    roomCode = sess.roomCode;
+    isHost = sess.isHost;
+    subscribeRoom();
+  } catch (e) {
+    console.warn("세션 복구 실패:", e);
+    clearSession();
+  }
+}
+
+// ════════ 유틸 ════════
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ""; }, 4000); }
+}
+function showToast(msg) {
+  const c = document.getElementById("toastContainer");
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
 </script>
 </body>
 </html>
